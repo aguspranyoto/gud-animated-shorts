@@ -1,5 +1,5 @@
 ---
-name: remotion-papercraft
+name: gud-animated-shorts
 description: Create 2.5D papercraft, cardboard diorama, and stop-motion cutout animated videos (Reels, TikTok, Shorts) using Remotion with pure CSS 3D Transforms, multi-layered cutouts, realistic drop-shadows, and stepped frame rates (no Three.js/WebGL required). Trigger this skill EVERY time the user wants papercraft animation, stop-motion cutout videos, tactile cardboard explainers, pop-up book aesthetics, or provides a voiceover (vo.mp3) and an emotion-tagged script (script.txt) for a short video. Also trigger when adding a new video to a multi-composition Remotion monorepo under src/videos/.
 ---
 
@@ -165,7 +165,7 @@ export const RemotionRoot: React.FC = () => {
 
 ## 4. Emotion-to-Physics Dynamics Engine
 
-Papercraft animation gains its life and humor from how elements pop, wobble, land, and hesitate. Claude **must** read the emotion tag from `script.txt` for each scene beat and configure the physics accordingly:
+Papercraft animation gains its life and humor from how elements pop, wobble, land, and hesitate. Always read the emotion tag from `script.txt` for each scene beat and configure the physics accordingly:
 
 | Emotion Tag | Remotion Spring Config | Motion Behavior & Visual Cues |
 | :--- | :--- | :--- |
