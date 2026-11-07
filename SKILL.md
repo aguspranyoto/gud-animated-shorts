@@ -59,7 +59,27 @@ Formula:
 $$\text{durationInFrames} = \lceil \text{durationInSeconds} \times 30 \rceil$$
 
 ### Script Format with Emotion Tags
-`script.txt` must follow the format guide (`references/educational-video-format.md`) and use ONLY canonical tags (`curiously, excited, shocked, confused, thoughtful, serious, triumphant, sad, whisper`). Example shape (excerpt from transcript 9a in the format guide — cold open into the "tapi..." chain):
+`script.txt` must follow the format guide (`references/educational-video-format.md`) and use ONLY canonical tags (`curiously, excited, shocked, confused, thoughtful, serious, triumphant, sad, whisper`).
+
+File shape is EXACT — `script.txt` contains ONLY emotion-tagged narration, NO title (the title lives in the invocation + folder slug, never inside the file). Downstream parsing and TTS sentence-splitting depend on blank lines:
+```text
+[curiously]
+Kalimat narasi pertama untuk beat itu.
+
+[confused]
+Kalimat narasi beat berikutnya.
+
+[thoughtful]
+Kalimat narasi beat berikutnya.
+```
+
+Rules (hard requirements, validate before STOP in Stage A):
+1. **NO title line inside `script.txt`.** Line 1 is the first `[tag]`, and every narration block starts with one. The video title is the invocation title / folder slug only.
+2. **Repeating unit = `[tag]` on its own line → 1–2 narration sentences on the next line(s) → ONE blank line.** No exceptions.
+3. **Every narration block MUST be preceded by exactly one `[tag]` on its own line.** Never stack two narration blocks under one tag, never write narration without a tag, never put tag + narration on the same line.
+4. **One blank line between every block** (after each narration, before each next `[tag]`). No two `[tag]` lines back-to-back without a blank line + narration between them, no narration lines glued together without a blank line + tag between them.
+
+Example shape (excerpt from transcript 9a in the format guide — cold open into the "tapi..." chain):
 ```text
 [curiously]
 Kalo kamu ratain tanah buat dilewatin, kamu udah punya jalan. Tapi pas ujan, jalannya jadi bubur.
@@ -543,7 +563,7 @@ Layer order: [background → body → ...  → foreground]
    ```bash
    ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 vo.mp3
    ```
-2. Read `script.txt`. Extract each line's emotion tag: `[excited]`, `[curiously]`, etc.
+2. Read `script.txt`. Split it on blank lines into blocks, each block = one `[tag]` line + its narration (line 1 of the file is the first `[tag]` — there is no title inside). Extract each block's emotion tag: `[excited]`, `[curiously]`, etc.
 
 ### Step 2: Visual Reference Audit
 1. Run `ls references/images/`.

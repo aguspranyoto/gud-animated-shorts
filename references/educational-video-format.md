@@ -151,33 +151,45 @@ Topic categories to develop:
 Production-standard example following the 7 beats above with a 3-round *"tapi..."* chain. Note: *"kamu"* address, plain-language-first, 1 sentence = 1 visual, *"pantes"* as the reveal, closing cliffhanger into the fridge episode. Narration stays in Indonesian — only the labels are English.
 
 ```txt
-Kalo Kamu Nyalain AC, Panas dari Kamar Kamu Dibuang ke Mana?
 [curiously]
 Kalo kamu nyalain AC, kamar kamu jadi dingin. Tapi pernah nggak sih kamu mikir, panasnya sebenarnya dibuang ke mana?
+
 [confused]
 Soalnya AC itu nggak bikin udara dingin. Sama sekali.
+
 [shocked]
 Yang dilakuin AC cuma satu: mindahin panas dari dalam kamar ke luar rumah!
+
 [curiously]
 Terus, gimana caranya?
+
 [thoughtful]
 Di dalam AC ada zat khusus yang namanya refrigeran. Kerjaannya cuma bolak-balik: nyerap panas, buang panas.
+
 [excited]
 Pertama, refrigeran masuk ke bagian indoor, ke komponen yang namanya evaporator. Di sinilah dia nyerap panas dari udara kamar. Makanya udara yang keluar jadi dingin!
+
 [shocked]
 Tapi tunggu dulu! Panas yang diserap itu nggak hilang. Panas cuma pindah tempat!
+
 [thoughtful]
 Panas itu dibawa ke bagian outdoor. Di sana ada kompresor, yang tugasnya meres refrigeran sampai tekanannya naik.
+
 [excited]
 Terus refrigeran masuk ke kondensor. Di sinilah panasnya dibuang ke udara luar! Makanya angin di dekat AC outdoor justru terasa panas!
+
 [curiously]
 Tapi kok listriknya bisa bengkak banget? Terus refrigerannya balik lagi gimana?
+
 [thoughtful]
 Lewat komponen terakhir: katup ekspansi. Tekanannya diturunin lagi sampai suhunya ikut turun, terus balik ke evaporator. Ulang terus selama AC nyala!
+
 [serious]
 Jadi aturannya simpel: indoor nyerap panas, outdoor buang panas. Filter kotor dikit aja, kerja kompresor langsung berat. Makanya tagihan naik.
+
 [triumphant]
 Pantes AC kotor bikin dompet jebol: AC itu bukan penghilang panas, tapi tukang pindah panas!
+
 [curiously]
 Nah, ada satu alat di rumah kamu yang cara kerjanya sama persis kayak AC. Kira-kira apa? Mau kita bongkar apa?
 ```
@@ -198,7 +210,7 @@ Nah, ada satu alat di rumah kamu yang cara kerjanya sama persis kayak AC. Kira-k
 - Ideal duration 60–90 seconds.
 - Script clean and ready for TTS.
 
-**File format:** `script.txt` — content is only the title and narration with emotion tags. No timestamps, visual directions, scene descriptions, or editing notes. This file is strictly for Text-to-Speech.
+**File format:** `script.txt` — content is ONLY emotion-tagged narration (no title inside; the title lives in the invocation + folder slug only). No timestamps, visual directions, scene descriptions, or editing notes. This file is strictly for Text-to-Speech.
 
 ---
 
