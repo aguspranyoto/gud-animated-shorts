@@ -54,12 +54,12 @@ Dengan gaya angkat udara, pesawat pun bisa melayang bebas seperti burung kertas!
 
 ---
 
-## 2. Autonomous Visual Reference Analysis (`reference/`)
+## 2. Autonomous Visual Reference Analysis (`references/images/`)
 
-The workspace contains a `reference/` folder holding image files with **arbitrary filenames** (e.g., `image_001.jpg`, `shot4.png`, `assetA.jpeg`, `reference-style.webp`).
+The workspace contains a `references/images/` folder holding visual reference files with **arbitrary filenames** (e.g., `image_001.jpg`, `shot4.png`, `assetA.jpeg`, `reference-style.webp`).
 
 When starting a project or generating visuals:
-1. **List all files** in `reference/` (`ls reference/`).
+1. **List all files** in `references/images/` (`ls references/images/`).
 2. **Inspect sample frames** using read tools or visual inspection commands.
 3. **Perform a 5-Point Style Audit** and synthesize the findings into the project's visual theme:
    - **Tabletop / Paper Base:** Is it kraft cardboard, recycled textured paper, parchment, blueprint, or a topographical map?
@@ -83,10 +83,12 @@ project-root/
 ├── package.json
 ├── remotion.config.ts
 ├── tsconfig.json
-├── reference/                     # User visual references (arbitrary image names)
-│   ├── image_001.jpg
-│   ├── image_002.jpg
-│   └── ...
+├── references/                    # Reference guides & visual study
+│   ├── emotion-spring-matrix.md   # Spring dynamics & shadow math
+│   └── images/                    # Visual reference frames (arbitrary image names)
+│       ├── image_001.jpg
+│       ├── image_002.jpg
+│       └── ...
 ├── public/
 │   ├── textures/
 │   │   ├── kraft-paper.jpg        # Shared paper & fiber grain
@@ -403,7 +405,7 @@ flowchart TD
     A["User request with vo.mp3 & script.txt"] --> B{"Files exist?"}
     B -- No --> C["Halt & request vo.mp3 + script.txt"]
     B -- Yes --> D["Inspect vo.mp3 (ffprobe) & compute duration"]
-    D --> E["Read reference/ folder & audit visual style"]
+    D --> E["Read references/images/ folder & audit visual style"]
     E --> F["Parse script.txt emotion tags & plan scene beats"]
     F --> G["Create folder src/videos/&lt;slug&gt;/"]
     G --> H["Build scenes with 2.5D Papercutout + StopMotion"]
@@ -420,7 +422,7 @@ flowchart TD
 2. Read `script.txt`. Extract each line's emotion tag: `[excited]`, `[curiously]`, etc.
 
 ### Step 2: Visual Reference Audit
-1. Run `ls reference/`.
+1. Run `ls references/images/`.
 2. Inspect the images. Identify:
    - Desk/table texture (e.g. kraft cardboard `#C8A882` with vignette).
    - Cutout border thickness and color.
