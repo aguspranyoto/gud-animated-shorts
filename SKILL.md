@@ -404,15 +404,51 @@ Follow these steps sequentially every time a video is requested:
 flowchart TD
     A["User request with vo.mp3 & script.txt"] --> B{"Files exist?"}
     B -- No --> C["Halt & request vo.mp3 + script.txt"]
-    B -- Yes --> D["Inspect vo.mp3 (ffprobe) & compute duration"]
-    D --> E["Read references/images/ folder & audit visual style"]
-    E --> F["Parse script.txt emotion tags & plan scene beats"]
-    F --> G["Create folder src/videos/&lt;slug&gt;/"]
-    G --> H["Build scenes with 2.5D Papercutout + StopMotion"]
-    H --> I["Register Composition in src/Root.tsx"]
-    I --> J["Render still frame preview for user verification"]
-    J --> K["Full video render (npx remotion render)"]
+    B -- Yes --> D["Step 0: Research every prop/object in the script"]
+    D --> E["Step 1: Inspect vo.mp3 & compute duration"]
+    E --> F["Step 2: Audit references/images/ visual style"]
+    F --> G["Step 3: Scene beat sheet & asset design spec"]
+    G --> H["Step 4: Scaffold src/videos/&lt;slug&gt;/"]
+    H --> I["Step 5: Register Composition in Root.tsx"]
+    I --> J["Step 6: Render still preview per scene"]
+    J --> K["Step 7: Full video render"]
 ```
+
+---
+
+### Step 0: Mandatory Topic & Prop Research ⚠️ NEVER SKIP
+
+> [!CAUTION]
+> **This step is NOT optional.** Do NOT start writing any scene or component code until this research is complete and written down. Skipping this step produces generic, inaccurate, or placeholder visuals.
+
+For every **distinct real-world object or location** mentioned in `script.txt`, conduct visual research and answer these questions before designing any SVG/CSS asset:
+
+#### 0a. Object Identification
+Extract every tangible prop and scene element from the script. Example for a script about AC/air conditioner:
+- Indoor unit (AC split wall-mounted): What shape exactly? Where is the air vent? Where is the display panel? What is the aspect ratio of the body?
+- Outdoor unit (compressor): What does the grille look like? How big is it relative to the indoor unit? Where are the pipes?
+- Refrigerant pipes: How many? What diameter? What color?
+- Room interior: What type of wall, ceiling height, window placement?
+
+#### 0b. Research Protocol
+For each identified prop:
+1. Describe the **real-world appearance** in detail (shape, proportions, color, texture, distinguishing features).
+2. Decide how it is **simplified into a papercraft cutout** — what silhouette captures it at a glance? What must be preserved to be recognizable?
+3. Plan the **layer stack**: background layer → structural body → details overlay → highlight/shine.
+4. Write a **1-paragraph prop description** before creating any code for it.
+
+#### 0c. Research Output (write before coding)
+Before the first `src/` file, write a `RESEARCH.md` or inline comment block titled `// PROP RESEARCH` in `story.ts` documenting:
+```
+PROP: [Name]
+Real shape: [description]
+Papercraft simplification: [how it becomes a cutout]
+Dominant colors: [hex list]
+Key details to preserve: [e.g., horizontal louver vent, LED indicator strip]
+Layer order: [background → body → ...  → foreground]
+```
+
+---
 
 ### Step 1: Pre-flight Verification
 1. Check `vo.mp3` existence and run:
@@ -423,35 +459,108 @@ flowchart TD
 
 ### Step 2: Visual Reference Audit
 1. Run `ls references/images/`.
-2. Inspect the images. Identify:
-   - Desk/table texture (e.g. kraft cardboard `#C8A882` with vignette).
-   - Cutout border thickness and color.
-   - Core prop colors (e.g. green vegetables, white rice, gold coins, red banners).
+2. Inspect at least 5 spread frames across the image list.
+3. Identify and document:
+   - Desk/table texture color and grain.
+   - Cutout border style (white die-cut vs raw edge vs embossed).
+   - Shadow warmth and angle.
+   - Any motion pattern (slide in, pop up, fold, zoom).
 
-### Step 3: Scene Beat Sheet Generation
-Divide the total frames among the dialogue lines in `script.txt`. Calculate frame ranges for each beat `[startFrame, endFrame]`.
+### Step 3: Scene Beat Sheet & Asset Design Spec
+For each emotion-tagged section of `script.txt`:
+- Assign a frame range `[startFrame, endFrame]`.
+- List which props are visible and at which Z-elevation.
+- Describe the **specific animation action** for that beat (do not use vague descriptions like "it moves" — be concrete: "AC indoor unit slides in from right at elevation Z2, overshoots 8px, settles").
 
 ### Step 4: Video Scaffolding
 Create `src/videos/<slug>/` containing:
-- `story.ts` (Audio duration, frame markers, emotion tags).
-- Main video component (e.g., `PesawatShort.tsx`).
-- `scenes/` (individual animated scenes).
+- `story.ts` (frame markers, emotion tags, prop research notes).
+- Main video component (e.g., `AcShort.tsx`).
+- `scenes/` (individual animated scenes, one file per beat or scene group).
+- `assets/` (SVG/CSS definitions for props).
 
 ### Step 5: Register Composition
-Update `src/Root.tsx` by importing the new component and appending a `<Composition />` entry with exact `durationInFrames`, `fps={30}`, `width={1080}`, `height={1920}` (or `720x1280`).
+Update `src/Root.tsx` by importing the new component and appending a `<Composition />` entry with exact `durationInFrames`, `fps={30}`, `width={1080}`, `height={1920}`.
 
-### Step 6: Visual Quality Check
-Render at least 2 keyframes to check styling before rendering the full video:
+### Step 6: Per-Scene Still Preview
+Render one still per major scene before assembling the final render:
 ```bash
-npx remotion still <CompositionId> out/still_01.png --frame=60
+npx remotion still <CompositionId> out/still_scene1.png --frame=30
+npx remotion still <CompositionId> out/still_scene2.png --frame=90
+```
+Review each still for: papercraft texture present? shadow correct? prop recognizable?
+
+### Step 7: Full Video Render
+```bash
+npx remotion render <CompositionId> out/<slug>.mp4
 ```
 
 ---
 
-## 7. Golden Rules of 2.5D Papercraft
+## 7. Caption Rules (Strict — Do Not Deviate)
 
-1. **Never use Three.js / WebGL:** All depth must be created with CSS 3D transforms (`transformStyle: "preserve-3d"`, `rotateX`, `rotateY`, `translateZ`) and stacked 2D layers with drop shadows.
-2. **Always quantize frame rate (Stop-Motion Cadence):** Real paper animations do not glide at 60 fps. Always quantize the visual updates with `useStopMotionFrame(2)` or `useStopMotionFrame(3)`.
-3. **Always ground cutouts with realistic shadows:** Floating elements look disconnected without drop-shadows. Shadows must match light angle (~315°) and soften as elements rise.
-4. **Never create a new Remotion project from scratch:** Always add compositions into `src/videos/<slug>/` and register them in `src/Root.tsx`.
-5. **Always sync motion dynamics to emotion tags:** Match spring bounce, hesitation, and camera shake strictly to the tags in `script.txt`.
+Captions are the **single most visible** element. Bad captions kill the vibe. Follow these rules absolutely:
+
+### 7a. Length Rule
+- **Maximum 4–5 words per caption card.**
+- If a script line is long (e.g., "AC bekerja dengan cara memindahkan panas dari dalam ruangan ke luar ruangan"), **split it into multiple sequential caption cards**, each showing 4–5 words timed to the voice-over.
+- Never display a full sentence at once.
+
+### 7b. Word-by-Word Highlight Animation
+Every caption must implement **active word highlight** — the word currently being spoken is highlighted differently from inactive words:
+
+```tsx
+// Active word highlight caption implementation
+interface CaptionProps {
+  words: string[];         // e.g. ["AC", "bekerja", "dengan"]
+  activeWordIndex: number; // which word is currently spoken (driven by frame timing)
+}
+
+export const PaperCaption: React.FC<CaptionProps> = ({ words, activeWordIndex }) => {
+  return (
+    <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", justifyContent: "center" }}>
+      {words.map((word, i) => (
+        <span
+          key={i}
+          style={{
+            fontSize: "40px",
+            fontWeight: 900,
+            color: i === activeWordIndex ? "#FF4B2B" : "#1C1917",         // active = accent color
+            textShadow: i === activeWordIndex ? "0 2px 12px rgba(255,75,43,0.4)" : "none",
+            transform: i === activeWordIndex ? "scale(1.08)" : "scale(1)",
+            transition: "none", // no CSS transition — step-change per stop-motion frame
+            display: "inline-block",
+          }}
+        >
+          {word}
+        </span>
+      ))}
+    </div>
+  );
+};
+```
+
+### 7c. Caption Timing
+Drive `activeWordIndex` from the frame, using the word's approximate duration from the script pacing:
+```tsx
+// Approximate: evenly distribute words across the beat's frame range
+const wordsPerBeat = words.length;
+const framesPerWord = Math.floor((beatEndFrame - beatStartFrame) / wordsPerBeat);
+const activeWordIndex = Math.min(
+  Math.floor((frame - beatStartFrame) / framesPerWord),
+  wordsPerBeat - 1
+);
+```
+
+---
+
+## 8. Golden Rules of 2.5D Papercraft
+
+1. **Always research every real-world prop before drawing it.** An unresearched prop looks like a placeholder rectangle. Write the prop description first, code second.
+2. **Never use Three.js / WebGL.** All depth = CSS 3D transforms + stacked layers + drop-shadows.
+3. **Always quantize to stop-motion cadence.** Use `useStopMotionFrame(2)` for 15 fps or `useStopMotionFrame(3)` for 10 fps. No smooth 60 fps gliding.
+4. **Always cast grounded shadows.** Every elevated cutout must have a shadow that shifts, blurs, and fades as elevation increases.
+5. **Never create a new Remotion project from scratch.** Always add to `src/videos/<slug>/` and register in `src/Root.tsx`.
+6. **Always sync spring dynamics to emotion tags.** The motion physics is the acting — treat it seriously.
+7. **Captions: 4–5 words max, with word-highlight active animation.** Never dump a full sentence.
+8. **Render per-scene stills before full render.** Catch papercraft style failures early, not at the end.
