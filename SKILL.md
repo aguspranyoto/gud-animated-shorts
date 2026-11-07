@@ -107,8 +107,7 @@ project-root/
 │   │   │   ├── PaperTextPill.tsx  # Stop-motion text badge/caption
 │   │   │   └── PaperTabletop.tsx  # Textured desk background with lighting gradient
 │   │   ├── hooks/
-│   │   │   ├── useStopMotion.ts   # Stepped frame rate quantizer (12-15 fps)
-│   │   │   └── usePaperWiggle.ts  # Subtle micro-jitter/wobble for tactile realism
+│   │   │   └── useStopMotion.ts   # Stepped frames + useSettleWiggle (bounded settle wobble, then frozen)
 │   │   └── styles/
 │   │       └── paperTheme.ts
 │   └── videos/                    # Individual video projects
@@ -213,7 +212,7 @@ export const getEmotionSpring = (
 ## 5. Pure 2.5D Papercraft Technical Stack (No WebGL)
 
 ### 1. Stop-Motion Stepped Frame Hook (`useStopMotionFrame`)
-In real stop-motion, animations run at **10, 12, or 15 fps**, not continuous 60 fps. This quantizer gives authentic stop-motion cadence:
+In real stop-motion, animations run at **10, 12, or 15 fps**, not continuous 60 fps. This quantizer gives authentic stop-motion cadence. **Stepped frames are for stepped POSITIONS only** (slide waypoints, slide-in offsets) — never feed them into `spring()`, which needs the raw continuous frame to resolve its own smooth curve (see §5.6).
 
 ```tsx
 // src/shared/hooks/useStopMotion.ts
@@ -223,6 +222,27 @@ export const useStopMotionFrame = (step: number = 2): number => {
   const frame = useCurrentFrame();
   // step = 2 converts 30 fps to 15 fps; step = 3 converts to 10 fps
   return Math.floor(frame / step) * step;
+};
+
+/**
+ * useSettleWiggle — the ONLY idle-motion hook.
+ * There is no free-running wiggle hook — do not create one.
+ * Plays a decaying wobble inside [startFrame, startFrame + durationFrames],
+ * then returns exactly { rotate: 0, deltaX: 0, deltaY: 0 } — frozen.
+ */
+export const useSettleWiggle = (
+  rawFrame: number,
+  opts: { startFrame: number; durationFrames?: number; intensity?: number } = { startFrame: 0 }
+): { rotate: number; deltaX: number; deltaY: number } => {
+  const { startFrame, durationFrames = 16, intensity = 0.5 } = opts;
+  const t = (rawFrame - startFrame) / durationFrames;
+  if (t < 0 || t > 1) return { rotate: 0, deltaX: 0, deltaY: 0 };
+  const decay = (1 - t) * (1 - t);
+  return {
+    rotate: Math.sin(t * Math.PI * 3) * 1.2 * intensity * decay,
+    deltaX: Math.cos(t * Math.PI * 2) * 2 * intensity * decay,
+    deltaY: Math.sin(t * Math.PI * 2) * 2 * intensity * decay,
+  };
 };
 ```
 
@@ -331,12 +351,11 @@ export const PopUpPaper: React.FC<PopUpPaperProps> = ({
 ```
 
 ### 4. Stop-Motion Subtitle Pill (`PaperTextPill`)
-Tactile speech card with subtle stop-motion wiggle:
+Tactile speech card. **Captions must be rock-solid — NO jitter, NO rotation, NO wiggle.** Readability beats texture.
 
 ```tsx
 // src/shared/components/PaperTextPill.tsx
 import React from "react";
-import { useCurrentFrame } from "remotion";
 
 interface PaperTextPillProps {
   text: string;
@@ -345,13 +364,8 @@ interface PaperTextPillProps {
 }
 
 export const PaperTextPill: React.FC<PaperTextPillProps> = ({ text }) => {
-  const frame = useCurrentFrame();
-  const steppedFrame = Math.floor(frame / 2) * 2;
-  
-  // Organic micro-wiggle (changes every 2 frames)
-  const rotation = Math.sin(steppedFrame * 0.4) * 0.8;
-  const translateY = Math.cos(steppedFrame * 0.3) * 1.2;
-
+  // NOTE: no useCurrentFrame, no steppedFrame, no sin/cos jitter here.
+  // Caption stays pixel-frozen so viewers can read it.
   return (
     <div
       style={{
@@ -373,7 +387,6 @@ export const PaperTextPill: React.FC<PaperTextPillProps> = ({ text }) => {
           textAlign: "center",
           boxShadow: "0 10px 24px rgba(30, 20, 15, 0.22), 0 2px 6px rgba(0, 0, 0, 0.08)",
           border: "2px solid #F0EEE9",
-          transform: `rotate(${rotation}deg) translateY(${translateY}px)`,
         }}
       >
         <span
@@ -393,6 +406,58 @@ export const PaperTextPill: React.FC<PaperTextPillProps> = ({ text }) => {
   );
 };
 ```
+
+---
+
+## 5.5 Papercraft Material Rules (Strict — Do Not Deviate)
+
+A `PaperCutout` wrapper alone does NOT make papercraft. Flat digital UI inside a drop-shadow still looks digital. Every cutout must pass these material rules, or the still-preview gate (Step 6) FAILS.
+
+### Banned (instant papercraft fail)
+- **Emoji as characters/props** (😊 ❄️ 💨 🛏️ ⛄). Emoji are glossy digital glyphs — they kill the paper illusion on sight. Build faces, weather, and objects from paper SVG/CSS shapes (circle head + paper-dot eyes + cut smile strip).
+- **Inset shadows / glassmorphism / clean CSS gradients** as surfaces (`box-shadow: inset ...`, `repeating-linear-gradient` wallpaper, glossy temp displays). Real paper has no inner glow. All surfaces = flat matte color + grain overlay.
+- **Thin 2–5px clean borders** passed off as "die-cut". On a 1080×1920 canvas a real cardstock edge reads at **8–12px**, off-white `#FFFDF8`, with a slightly irregular radius (e.g. `18px 22px 20px 24px` — never four identical corners).
+- **Text-label boxes as props** (a rounded rectangle that just says "SELIMUT TEBAL 🛏️" is a caption, not a blanket). Every prop needs a recognizable **silhouette first**, text second.
+
+### Mandatory layer stack (every cutout)
+1. **Base silhouette** — the shape that reads at a glance (AC body, blanket-covered sleeper, droplet).
+2. **1–2 detail layers** — vent slats, LED strip, quilt stitch lines, droplet shine — as separate stacked paper strips, NOT painted-on gradients.
+3. **Grain overlay** — SVG `feTurbulence` fiber or `staticFile("textures/kraft-paper.jpg")` at **opacity ≥ 0.25** on the cutout itself, not only on the tabletop. Tabletop-only grain is invisible after video compression.
+4. **Warm cast shadow** — `rgba(35, 25, 20, α)` via `PaperCutout` elevation. No neutral-gray or black-only shadows.
+
+### Static earth rule
+Walls, room panels, tabletops, and background decor are the **table — tables don't shake**. They get **zero transform, zero wiggle, zero spring**. Any `rotate`/`translate` on a background element is a fail.
+
+---
+
+## 5.6 Wiggle Discipline & Motion Ownership (Strict)
+
+Uncontrolled wiggle is why "semua part goyang-goyang". Follow this exactly:
+
+### One motion owner per element per beat
+NEVER stack `spring scale` + `wiggle rotate` + `sin pulse translateY` on the same `<div>`. Pick ONE per beat:
+- entrance → emotion spring, **then freeze**, or
+- settle → `useSettleWiggle` for 12–20 frames after landing, **then freeze**, or
+- ambient float → ONLY for airborne things (clouds, breeze strips, birds), amplitude ≤ 4px, period ≥ 60 frames.
+
+Grounded props (AC unit on wall, sleeper on bed, badges, titles) NEVER float. If it rests on something, it is frozen after landing.
+
+### spring() takes RAW frame, never stepped frame
+```tsx
+// CORRECT
+const rawFrame = useCurrentFrame();
+const pop = getEmotionSpring(rawFrame, 30, "excited", 5); // smooth spring curve
+const sFrame = useStopMotionFrame(2);                      // stepped, for stepped positions only
+const settle = useSettleWiggle(rawFrame, { startFrame: 5, durationFrames: 16, intensity: 0.5 });
+
+// WRONG — stepping the spring input creates stutter-overshoot that never settles
+const frame = useStopMotionFrame(2);
+const pop = getEmotionSpring(frame, 30, "excited", 5); // ❌ do not do this
+```
+
+### Where wiggle is allowed
+- **Allowed:** ONE hero character/prop per scene, settle window only (12–20 frames post-entrance) or low idle (`intensity ≤ 0.5`, rotate ≤ 0.6°).
+- **Forbidden:** walls, room panels, tabletops, title badges, question badges, captions, subtitles, `PaperTextPill`. If everything moves, nothing feels like stop-motion. **Default state = FROZEN.** Motion must earn its place in the beat sheet (Step 3) with a concrete verb — "settles 0.5° over 14 frames", not "wiggles".
 
 ---
 
@@ -558,7 +623,8 @@ const activeWordIndex = Math.min(
 
 1. **Always research every real-world prop before drawing it.** An unresearched prop looks like a placeholder rectangle. Write the prop description first, code second.
 2. **Never use Three.js / WebGL.** All depth = CSS 3D transforms + stacked layers + drop-shadows.
-3. **Always quantize to stop-motion cadence.** Use `useStopMotionFrame(2)` for 15 fps or `useStopMotionFrame(3)` for 10 fps. No smooth 60 fps gliding.
+3. **Stepped frames for positions, raw frames for springs.** `useStopMotionFrame()` drives stepped positions; `spring()` and `getEmotionSpring()` ALWAYS take the raw `useCurrentFrame()`. Stepping a spring input creates stutter-overshoot. See §5.6.
+4. **Default state = FROZEN.** Backgrounds, walls, badges, and captions get zero transform. Only one hero element per scene may settle-wiggle (12–20 frames post-entrance) or ambient-float (airborne only, ≤ 4px). See §5.6.
 4. **Always cast grounded shadows.** Every elevated cutout must have a shadow that shifts, blurs, and fades as elevation increases.
 5. **Never create a new Remotion project from scratch.** Always add to `src/videos/<slug>/` and register in `src/Root.tsx`.
 6. **Always sync spring dynamics to emotion tags.** The motion physics is the acting — treat it seriously.

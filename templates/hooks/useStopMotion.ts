@@ -3,6 +3,10 @@ import { useCurrentFrame } from "remotion";
 /**
  * useStopMotionFrame
  * Quantizes continuous timeline frames into stepped frames (e.g. 15 fps or 10 fps on a 30 fps timeline)
+ * Use for STEPPED POSITIONS only (slide waypoints, slide-in offsets).
+ * NEVER feed this into spring() / getEmotionSpring() — springs need the raw
+ * continuous frame to resolve their own curve. Stepping a spring input
+ * creates stutter-overshoot that never settles.
  * @param step Number of native frames per stop-motion key (default 2 -> 15 fps at 30 fps)
  */
 export const useStopMotionFrame = (step: number = 2): number => {
@@ -11,20 +15,26 @@ export const useStopMotionFrame = (step: number = 2): number => {
 };
 
 /**
- * usePaperWiggle
- * Generates organic micro-wobble to simulate hands repositioning paper cutouts between frames
+ * useSettleWiggle — the ONLY idle-motion hook.
+ * Plays a decaying wobble inside [startFrame, startFrame + durationFrames],
+ * then returns exactly { rotate: 0, deltaX: 0, deltaY: 0 } — frozen.
+ *
+ * @example
+ * const rawFrame = useCurrentFrame();
+ * const pop = getEmotionSpring(rawFrame, 30, "excited", 5); // raw frame!
+ * const settle = useSettleWiggle(rawFrame, { startFrame: 25, durationFrames: 16, intensity: 0.5 });
  */
-export const usePaperWiggle = (step: number = 2, intensity: number = 1.0) => {
-  const frame = useCurrentFrame();
-  const stepped = Math.floor(frame / step) * step;
-
-  const pseudoRandom = Math.sin(stepped * 999.0) * 10000;
-  const normalized = pseudoRandom - Math.floor(pseudoRandom);
-
-  const rotate = (normalized * 2 - 1) * 1.5 * intensity;
-  const deltaX = Math.cos(stepped * 1.3) * 1.5 * intensity;
-  const deltaY = Math.sin(stepped * 1.7) * 1.5 * intensity;
-
-  return { rotate, deltaX, deltaY };
+export const useSettleWiggle = (
+  rawFrame: number,
+  opts: { startFrame: number; durationFrames?: number; intensity?: number } = { startFrame: 0 }
+): { rotate: number; deltaX: number; deltaY: number } => {
+  const { startFrame, durationFrames = 16, intensity = 0.5 } = opts;
+  const t = (rawFrame - startFrame) / durationFrames;
+  if (t < 0 || t > 1) return { rotate: 0, deltaX: 0, deltaY: 0 };
+  const decay = (1 - t) * (1 - t);
+  return {
+    rotate: Math.sin(t * Math.PI * 3) * 1.2 * intensity * decay,
+    deltaX: Math.cos(t * Math.PI * 2) * 2 * intensity * decay,
+    deltaY: Math.sin(t * Math.PI * 2) * 2 * intensity * decay,
+  };
 };
-

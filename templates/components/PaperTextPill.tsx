@@ -1,5 +1,4 @@
 import React from "react";
-import { useCurrentFrame } from "remotion";
 
 export interface PaperTextPillProps {
   text: string;
@@ -9,6 +8,11 @@ export interface PaperTextPillProps {
   style?: React.CSSProperties;
 }
 
+/**
+ * PaperTextPill — caption card. Rock-solid by design: NO jitter, NO rotation,
+ * NO wiggle hook. Captions are the single most visible element; readability
+ * beats texture. Only the word-highlight layer (see SKILL.md §7b) animates.
+ */
 export const PaperTextPill: React.FC<PaperTextPillProps> = ({
   text,
   bottomOffset = 140,
@@ -16,13 +20,6 @@ export const PaperTextPill: React.FC<PaperTextPillProps> = ({
   backgroundColor = "#FFFFFF",
   style = {},
 }) => {
-  const frame = useCurrentFrame();
-  const steppedFrame = Math.floor(frame / 2) * 2;
-
-  // Discrete micro-jitter emulation of stop-motion replacement animation
-  const jitterAngle = Math.sin(steppedFrame * 0.45) * 0.75; // -0.75 to +0.75 deg
-  const jitterY = Math.cos(steppedFrame * 0.35) * 1.0;
-
   return (
     <div
       style={{
@@ -46,7 +43,6 @@ export const PaperTextPill: React.FC<PaperTextPillProps> = ({
           textAlign: "center",
           boxShadow: "0 12px 28px rgba(35, 25, 20, 0.22), 0 3px 6px rgba(0, 0, 0, 0.08)",
           border: "2.5px solid #F3EFEA",
-          transform: `rotate(${jitterAngle}deg) translateY(${jitterY}px)`,
         }}
       >
         <span
@@ -65,4 +61,3 @@ export const PaperTextPill: React.FC<PaperTextPillProps> = ({
     </div>
   );
 };
-

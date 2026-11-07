@@ -44,26 +44,52 @@ export const getPaperShadow = (elevationZ: number) => {
 
 ---
 
-## 3. Stop-Motion Wiggle Generator
+## 3. Settle Wiggle Generator
 
-To give 2D SVG or image cutouts the tactile feel of manual stop-motion manipulation:
+To give 2D SVG or image cutouts the tactile feel of manual stop-motion manipulation, use a BOUNDED, decaying wobble — never a free-running one.
+
+> [!CAUTION]
+> There is NO free-running wiggle hook in this project — do not create one.
+> An infinite wiggle on every element makes the whole frame vibrate.
+> `useSettleWiggle` (below) runs on ONE hero element per scene (12–20 frames
+> post-entrance, `intensity ≤ 0.5`), then frozen. Backgrounds, walls,
+> badges, and captions get zero motion — default state is FROZEN.
 
 ```typescript
-import { useCurrentFrame } from "remotion";
-
-export const usePaperWiggle = (step = 2, intensity = 1.0) => {
-  const frame = useCurrentFrame();
-  const stepped = Math.floor(frame / step) * step;
-
-  // Pseudo-random deterministic hash based on stepped frame
-  const pseudoRandom = Math.sin(stepped * 999.0) * 10000;
-  const normalized = pseudoRandom - Math.floor(pseudoRandom);
-
-  const rotate = (normalized * 2 - 1) * 1.5 * intensity; // -1.5deg to +1.5deg
-  const deltaX = (Math.cos(stepped * 1.3) * 1.5) * intensity;
-  const deltaY = (Math.sin(stepped * 1.7) * 1.5) * intensity;
-
-  return { rotate, deltaX, deltaY };
+// Preferred: bounded settle wobble, then frozen
+export const useSettleWiggle = (
+  rawFrame: number,
+  opts: { startFrame: number; durationFrames?: number; intensity?: number } = { startFrame: 0 }
+) => {
+  const { startFrame, durationFrames = 16, intensity = 0.5 } = opts;
+  const t = (rawFrame - startFrame) / durationFrames;
+  if (t < 0 || t > 1) return { rotate: 0, deltaX: 0, deltaY: 0 };
+  const decay = (1 - t) * (1 - t);
+  return {
+    rotate: Math.sin(t * Math.PI * 3) * 1.2 * intensity * decay,
+    deltaX: Math.cos(t * Math.PI * 2) * 2 * intensity * decay,
+    deltaY: Math.sin(t * Math.PI * 2) * 2 * intensity * decay,
+  };
 };
+```
+
+## 4. Motion Ownership & Spring Input Rule
+
+1. **One motion owner per element per beat.** NEVER stack `spring scale` +
+   `wiggle rotate` + `sin pulse translateY` on the same `<div>`. Pick ONE:
+   entrance spring then freeze, settle-wiggle then freeze, or ambient float
+   (airborne things only, amplitude ≤ 4px, period ≥ 60 frames).
+2. **`spring()` takes the RAW frame, never the stepped frame.**
+   `useStopMotionFrame()` is for stepped positions only. Feeding stepped
+   frames into a spring creates stutter-overshoot that never settles:
+
+```tsx
+// CORRECT
+const rawFrame = useCurrentFrame();
+const pop = getEmotionSpring(rawFrame, 30, "excited", 5);
+
+// WRONG — do not do this
+const frame = useStopMotionFrame(2);
+const pop = getEmotionSpring(frame, 30, "excited", 5); // ❌
 ```
 
