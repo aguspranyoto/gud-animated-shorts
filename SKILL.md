@@ -1,6 +1,7 @@
 ---
 name: gud-animated-shorts
-description: Create 2.5D papercraft, cardboard diorama, and stop-motion cutout animated videos (Reels, TikTok, Shorts) using Remotion with pure CSS 3D Transforms, multi-layered cutouts, realistic drop-shadows, and stepped frame rates (no Three.js/WebGL required). Trigger this skill EVERY time the user wants papercraft animation, stop-motion cutout videos, tactile cardboard explainers, pop-up book aesthetics, or provides a voiceover (vo.mp3) and an emotion-tagged script (script.txt) for a short video. Also trigger when adding a new video to a multi-composition Remotion monorepo under src/videos/.
+argument-hint: "[video-topic-title]"
+description: Create 2.5D papercraft stop-motion animated shorts (Reels, TikTok, Shorts) in Remotion via a two-stage pipeline. STAGE A (trigger: user invokes with a TITLE only, e.g. /gud-animated-shorts {title}): deep-dive internet research, then write an emotion-tagged script.txt into a new short-slug folder per the format guide, then STOP. STAGE B (trigger: user drops vo.mp3 into that folder with no further prompt): verify gate, scaffold scenes, render the full video. Also trigger when adding a composition to a Remotion monorepo under src/videos/.
 ---
 
 # Remotion Papercraft & 2.5D Stop-Motion Cutout Animation
@@ -11,18 +12,42 @@ It achieves a high-end stop-motion look (analogous to *South Park*, *Kubo and th
 
 ---
 
-## 1. Trigger & Prasyarat Wajib (Mandatory Inputs Gate)
+## 1. Invocation Routing & Two-Stage Pipeline
 
-Before writing any scene code or setting up compositions, **ALWAYS** enforce this hard gate:
+This skill runs as `/gud-animated-shorts {title}` in **exactly two stages**. The invocation argument (`$ARGUMENTS`) is the video topic title. Route on what exists:
 
-### Mandatory Files Checklist
-When a user requests a new video using this skill, they **MUST** provide:
-1. `vo.mp3` — Audio voice-over file (the single source of truth for duration, pacing, and cut timing).
-2. `script.txt` — Voice-over script with explicit **emotion tags** on every dialogue or scene block.
+| Situation | Stage | Action |
+| :--- | :--- | :--- |
+| Invoked with a **title only**, no `vo.mp3` yet | **STAGE A — script-first** | Deep-dive internet research → create folder → write `script.txt` → **STOP** |
+| A `vo.mp3` appears in a `src/videos/<slug>/` folder that already holds a `script.txt` (user drops it with no prompt) | **STAGE B — render** | Verify gate → scaffold scenes → render full video, no confirmation asked |
+
+### STAGE A — from title to `script.txt` (then STOP)
+
+1. **Topic deep-dive research is MANDATORY and comes first.** The moment the title is received, research the topic on the internet (search + open sources) BEFORE writing a single script line:
+   - Minimum **3 distinct searches / 3 reliable sources** (encyclopedia, manufacturer docs, reputable explainers — not just one blog).
+   - Verify: the real mechanism, correct term names, concrete numbers/names (temperatures, pressures, years, part names), and common misconceptions.
+   - Hunt specifically for **failed-attempt material**: what intuitive fixes do people try that DON'T work, and why (this feeds Beat 2's *"tapi..."* chain).
+   - Write findings to `src/videos/<slug>/RESEARCH.md` (facts + sources + failed-attempt candidates + term list with plain-language equivalents). **No `script.txt` may exist before `RESEARCH.md` does.**
+2. **Read `references/educational-video-format.md`** (the format guide: 7 beats, *"kamu"* address, canonical emotion tags, rhythm transcripts). The script MUST follow it.
+3. **Create the folder first, then the script inside it.** Derive `<slug>` from the title yourself — do not ask the user:
+   - lowercase kebab-case, **2–4 words, ≤ 28 characters**, Indonesian keywords only, drop stopwords (*kalo, kamu, yang, di, ke, apa*).
+   - Examples: *"Kalo Kamu Nyalain AC..."* → `ac-pindah-panas`; *"Kenapa Kulkas Mati Setelah Pindahan"* → `kulkas-mati-pindahan`.
+   - Path: `src/videos/<slug>/` in the current working directory's Remotion project (create `src/videos/` if missing). Write the script to `src/videos/<slug>/script.txt` — never a loose `script.txt` at repo root.
+4. **STOP after the script.** Do not scaffold scenes, do not render. Reply with the folder path, the script, and exactly this next step: *"Ubah script ini menjadi `vo.mp3` (TTS) lalu taruh sebagai `src/videos/<slug>/vo.mp3` — tanpa prompt apa pun, saya lanjut otomatis sampai render."*
 
 > [!CAUTION]
-> **Hard Stop Rule:** If either `vo.mp3` or `script.txt` is missing from the working directory or designated video folder, **STOP IMMEDIATELY**. Do not guess the timing or script. Prompt the user:
-> *"Untuk membuat video papercraft animasi, saya membutuhkan file `vo.mp3` (audio voice-over) dan `script.txt` (naskah dengan tag emosi seperti [excited], [curiously], dll.). Silakan unggah kedua file tersebut terlebih dahulu."*
+> **Hard Stop Rule (Stage A):** if `$ARGUMENTS`/title is empty, STOP and ask for the title. If research was skipped, the script is invalid — go back and research.
+
+### STAGE B — from `vo.mp3` drop to render (no prompt needed)
+
+Trigger: a `vo.mp3` file appears in `src/videos/<slug>/` next to its `script.txt`. The user gives **no further prompt** — proceed automatically:
+
+1. Verify the gate: both `vo.mp3` and `script.txt` exist in the same folder. If `script.txt` is missing, STOP and ask for it (never invent timing).
+2. Continue with Steps 0–7 in §6 (prop research → duration → visual audit → beat sheet → scaffold → register → stills → render).
+
+> [!CAUTION]
+> **Hard Stop Rule (Stage B):** if `script.txt` is missing from the folder, STOP IMMEDIATELY. Prompt the user:
+> *"Saya menemukan `vo.mp3` tapi belum ada `script.txt` di folder yang sama. Silakan jalankan `/gud-animated-shorts {judul}` dulu untuk membuat script-nya."*
 
 ### Audio Inspection & Timing Extraction
 Once `vo.mp3` is provided, calculate the total video frames at **30 fps**:
@@ -34,22 +59,16 @@ Formula:
 $$\text{durationInFrames} = \lceil \text{durationInSeconds} \times 30 \rceil$$
 
 ### Script Format with Emotion Tags
-`script.txt` must follow this structure:
+`script.txt` must follow the format guide (`references/educational-video-format.md`) and use ONLY canonical tags (`curiously, excited, shocked, confused, thoughtful, serious, triumphant, sad, whisper`). Example shape (excerpt from transcript 9a in the format guide — cold open into the "tapi..." chain):
 ```text
-[excited]
-Adik-adik! Pernah nggak kalian melihat pesawat terbang tinggi di langit?
-
 [curiously]
-Tapi... bagaimana ya benda sebesar itu bisa terbang padahal beratnya ribuan kilogram?
+Kalo kamu ratain tanah buat dilewatin, kamu udah punya jalan. Tapi pas ujan, jalannya jadi bubur.
+
+[confused]
+Jadi kamu taburin batu. Tapi batunya gede-gede. Lewat situ, badan kamu ikut loncat-loncat.
 
 [thoughtful]
-Ternyata rahasianya ada pada bentuk sayapnya yang unik!
-
-[shocked]
-Tanpa bentuk sayap ini, pesawat akan langsung jatuh berdebam ke tanah!
-
-[triumphant]
-Dengan gaya angkat udara, pesawat pun bisa melayang bebas seperti burung kertas!
+Jadi tanahnya kamu padatin dulu, terus kamu tumpuk batu pecah kecil-kecil, lapis demi lapis, dipadatin lagi.
 ```
 
 ---
@@ -463,12 +482,16 @@ const pop = getEmotionSpring(frame, 30, "excited", 5); // ❌ do not do this
 
 ## 6. End-to-End Execution Workflow
 
-Follow these steps sequentially every time a video is requested:
+Stage routing lives in §1. This section details the steps themselves.
 
 ```mermaid
 flowchart TD
-    A["User request with vo.mp3 & script.txt"] --> B{"Files exist?"}
-    B -- No --> C["Halt & request vo.mp3 + script.txt"]
+    A["/gud-animated-shorts {title}"] --> R["Topic deep-dive research (internet, 3+ sources) → RESEARCH.md"]
+    R --> S["Read format guide → write src/videos/&lt;slug&gt;/script.txt"]
+    S --> T["STOP — reply with folder path + next step"]
+    T --> U["User drops vo.mp3 into src/videos/&lt;slug&gt;/ (no prompt)"]
+    U --> B{"script.txt exists in same folder?"}
+    B -- No --> C["Halt & ask for script"]
     B -- Yes --> D["Step 0: Research every prop/object in the script"]
     D --> E["Step 1: Inspect vo.mp3 & compute duration"]
     E --> F["Step 2: Audit references/images/ visual style"]
@@ -625,8 +648,8 @@ const activeWordIndex = Math.min(
 2. **Never use Three.js / WebGL.** All depth = CSS 3D transforms + stacked layers + drop-shadows.
 3. **Stepped frames for positions, raw frames for springs.** `useStopMotionFrame()` drives stepped positions; `spring()` and `getEmotionSpring()` ALWAYS take the raw `useCurrentFrame()`. Stepping a spring input creates stutter-overshoot. See §5.6.
 4. **Default state = FROZEN.** Backgrounds, walls, badges, and captions get zero transform. Only one hero element per scene may settle-wiggle (12–20 frames post-entrance) or ambient-float (airborne only, ≤ 4px). See §5.6.
-4. **Always cast grounded shadows.** Every elevated cutout must have a shadow that shifts, blurs, and fades as elevation increases.
-5. **Never create a new Remotion project from scratch.** Always add to `src/videos/<slug>/` and register in `src/Root.tsx`.
-6. **Always sync spring dynamics to emotion tags.** The motion physics is the acting — treat it seriously.
-7. **Captions: 4–5 words max, with word-highlight active animation.** Never dump a full sentence.
-8. **Render per-scene stills before full render.** Catch papercraft style failures early, not at the end.
+5. **Always cast grounded shadows.** Every elevated cutout must have a shadow that shifts, blurs, and fades as elevation increases.
+6. **Never create a new Remotion project from scratch.** Always add to `src/videos/<slug>/` and register in `src/Root.tsx`.
+7. **Always sync spring dynamics to emotion tags.** The motion physics is the acting — treat it seriously.
+8. **Captions: 4–5 words max, with word-highlight active animation.** Never dump a full sentence.
+9. **Render per-scene stills before full render.** Catch papercraft style failures early, not at the end.
