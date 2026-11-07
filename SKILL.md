@@ -28,6 +28,7 @@ This skill runs as `/gud-animated-shorts {title}` in **exactly two stages**. The
    - Verify: the real mechanism, correct term names, concrete numbers/names (temperatures, pressures, years, part names), and common misconceptions.
    - Hunt specifically for **failed-attempt material**: what intuitive fixes do people try that DON'T work, and why (this feeds Beat 2's *"tapi..."* chain).
    - Write findings to `src/videos/<slug>/RESEARCH.md` (facts + sources + failed-attempt candidates + term list with plain-language equivalents). **No `script.txt` may exist before `RESEARCH.md` does.**
+   - `RESEARCH.md` line 1 MUST be the full video title verbatim: `Title: <full invocation title>`. The slug is lossy (2–4 keywords), so this line is the single source of truth for the full title (upload title, captions, thumbnail text).
 2. **Read `references/educational-video-format.md`** (the format guide: 7 beats, *"kamu"* address, canonical emotion tags, rhythm transcripts). The script MUST follow it.
 3. **Create the folder first, then the script inside it.** Derive `<slug>` from the title yourself — do not ask the user:
    - lowercase kebab-case, **2–4 words, ≤ 28 characters**, Indonesian keywords only, drop stopwords (*kalo, kamu, yang, di, ke, apa*).
