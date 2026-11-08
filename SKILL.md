@@ -10,6 +10,12 @@ This skill guides the creation of tactile, physical-looking **Papercraft / Stop-
 
 It achieves a high-end stop-motion look (analogous to *South Park*, *Kubo and the Two Strings* paper cutouts, cardboard dioramas, and tabletop pop-up animations) **without Three.js or WebGL**, using pure React, CSS 3D transforms, multi-tiered drop-shadows, paper textures, and stepped frame rates.
 
+> [!IMPORTANT]
+> **Two directories, never confused.** This skill repo (`<SKILL_DIR>`) holds `SKILL.md`, `references/`, and `templates/` — it is NOT a Remotion project. All video work happens in the user's Remotion project (`<PROJECT_DIR>`, the current working directory): its `src/videos/`, `public/`, and `out/` folders. Rules:
+> - Read skill assets from `<SKILL_DIR>`: `references/educational-video-format.md`, `references/video/main_reference.mp4`, `templates/...`.
+> - Run every command (`ffmpeg`, `ffprobe`, `npx remotion ...`, `mkdir`, `cp`) with cwd = `<PROJECT_DIR>`. Never `cd` into `<SKILL_DIR>` to run project commands.
+> - If a referenced skill file is needed in the project (design system, format guide), COPY it — never reference `../` paths from project code into the skill repo.
+
 ---
 
 ## 1. Invocation Routing & Two-Stage Pipeline
@@ -29,7 +35,7 @@ This skill runs as `/gud-animated-shorts {title}` in **exactly two stages**. The
    - Hunt specifically for **failed-attempt material**: what intuitive fixes do people try that DON'T work, and why (this feeds Beat 2's *"tapi..."* chain).
    - Write findings to `src/videos/<slug>/RESEARCH.md` (facts + sources + failed-attempt candidates + term list with plain-language equivalents). **No `script.txt` may exist before `RESEARCH.md` does.**
    - `RESEARCH.md` line 1 MUST be the full video title verbatim: `Title: <full invocation title>`. The slug is lossy (2–4 keywords), so this line is the single source of truth for the full title (upload title, captions, thumbnail text).
-2. **Read `references/educational-video-format.md`** (the format guide: 7 beats, *"kamu"* address, canonical emotion tags, rhythm transcripts). The script MUST follow it.
+2. **Read `<SKILL_DIR>/references/educational-video-format.md`** (the format guide: 7 beats, *"kamu"* address, canonical emotion tags, rhythm transcripts). The script MUST follow it. (If the project needs its own copy, copy the file into `<PROJECT_DIR>/references/` — never import across repos.)
 3. **Create the folder first, then the script inside it.** Derive `<slug>` from the title yourself — do not ask the user:
    - lowercase kebab-case, **2–4 words, ≤ 28 characters**, Indonesian keywords only, drop stopwords (*kalo, kamu, yang, di, ke, apa*).
    - Examples: *"Kalo Kamu Nyalain AC..."* → `ac-pindah-panas`; *"Kenapa Kulkas Mati Setelah Pindahan"* → `kulkas-mati-pindahan`.
@@ -75,7 +81,7 @@ import { Audio, staticFile } from "remotion";
 ```
 
 ### Script Format with Emotion Tags
-`script.txt` must follow the format guide (`references/educational-video-format.md`) and use ONLY canonical tags (`curiously, excited, shocked, confused, thoughtful, serious, triumphant, sad, whisper`).
+`script.txt` must follow the format guide (`<SKILL_DIR>/references/educational-video-format.md`) and use ONLY canonical tags (`curiously, excited, shocked, confused, thoughtful, serious, triumphant, sad, whisper`).
 
 File shape is EXACT — `script.txt` contains ONLY emotion-tagged narration, NO title (the title lives in the invocation + folder slug, never inside the file). Downstream parsing and TTS sentence-splitting depend on blank lines:
 ```text
@@ -109,14 +115,20 @@ Jadi tanahnya kamu padatin dulu, terus kamu tumpuk batu pecah kecil-kecil, lapis
 
 ---
 
-## 2. Autonomous Visual Reference Analysis (`references/images/`)
+## 2. Autonomous Visual Reference Analysis (`<SKILL_DIR>/references/video/`)
 
-The workspace contains a `references/images/` folder holding visual reference files with **arbitrary filenames** (e.g., `image_001.jpg`, `shot4.png`, `assetA.jpeg`, `reference-style.webp`).
+The single source of truth for the target look is `<SKILL_DIR>/references/video/main_reference.mp4` (720×1280, 30fps, ~89s). Its extracted audit frames live committed in `<SKILL_DIR>/references/video/frames/` — inspect them directly (no extraction needed unless the video changes). Only regenerate if the video changes (run from any cwd, paths point at the skill repo):
+
+```bash
+# Sparse audit (style): 1 frame per 5s → ~18 frames
+ffmpeg -y -i <SKILL_DIR>/references/video/main_reference.mp4 -vf fps=1/5 <SKILL_DIR>/references/video/frames/frame-%03d.jpg
+# Dense audit (transitions/motion): 3fps over a time window
+ffmpeg -y -ss 00:00:20 -to 00:00:35 -i <SKILL_DIR>/references/video/main_reference.mp4 -vf fps=3 /tmp/trans-%03d.jpg
+```
 
 When starting a project or generating visuals:
-1. **List all files** in `references/images/` (`ls references/images/`).
-2. **Inspect sample frames** using read tools or visual inspection commands.
-3. **Perform a 5-Point Style Audit** and synthesize the findings into the project's visual theme:
+1. **Extract sparse frames** (if `frames/` is empty) and **inspect at least 6 spread across the runtime**.
+2. **Perform a 5-Point Style Audit** and synthesize the findings into the project's visual theme:
    - **Tabletop / Paper Base:** Is it kraft cardboard, recycled textured paper, parchment, blueprint, or a topographical map?
    - **Color Palette:** Extract dominant hex codes (Background base, Primary cutout tint, Secondary accents, Contrast lines).
    - **Cutout Border Style:** Are cutouts bordered with a crisp white die-cut cardstock edge (`border: 3px solid #fff`), a raw rough-cut dark edge, or unbordered folded paper?
@@ -125,6 +137,10 @@ When starting a project or generating visuals:
      - Shadow tone (warm translucent umber `rgba(45, 30, 20, 0.35)` vs neutral charcoal `rgba(0, 0, 0, 0.4)`).
      - Layer elevation separation (Z0 surface, Z1 flat underlay, Z2 elevated prop, Z3 floating/popping actor).
    - **Perspective & Framing:** Top-down flat-lay (overhead desk), 2.5D diorama tilt (`perspective(1200px) rotateX(15deg)`), or pop-up book fold.
+3. **Perform a Motion Audit** (dense frames over 2–3 scene changes — stills can't show this):
+   - **Beat durations:** how long does each scene hold before cutting? (Reference rhythm anchors the beat sheet in Step 3.)
+   - **Transition type per cut:** hard cut vs slide/wipe vs camera push vs object-morph. Recreate the reference's transition vocabulary, don't default everything to crossfade.
+   - **Camera behavior:** locked top-down vs slow push-in vs lateral pan. Note which beats move the camera and which stay frozen.
 
 ---
 
@@ -133,17 +149,14 @@ When starting a project or generating visuals:
 This codebase is a **Single Monorepo** capable of hosting multiple distinct video shorts without reinstalling or re-scaffolding Remotion.
 
 ### Directory Structure
+The Remotion project (`<PROJECT_DIR>`) hosts multiple distinct video shorts without reinstalling Remotion. (Skill assets live in `<SKILL_DIR>` — see the box in the intro. Only the format guide is optionally copied into the project.)
 ```text
-project-root/
+<PROJECT_DIR>/
 ├── package.json
 ├── remotion.config.ts
 ├── tsconfig.json
-├── references/                    # Reference guides & visual study
-│   ├── emotion-spring-matrix.md   # Spring dynamics & shadow math
-│   └── images/                    # Visual reference frames (arbitrary image names)
-│       ├── image_001.jpg
-│       ├── image_002.jpg
-│       └── ...
+├── references/                    # OPTIONAL copy of <SKILL_DIR>/references/educational-video-format.md for offline work
+│   └── educational-video-format.md
 ├── public/
 │   ├── <slug>/                    # Per-video static assets — NEVER loose files at public/ root
 │   │   └── vo.mp3                 # Copied from src/videos/<slug>/vo.mp3 at Stage B start; loaded via staticFile("<slug>/vo.mp3")
@@ -152,7 +165,7 @@ project-root/
 ├── src/
 │   ├── index.ts                   # Remotion entry point
 │   ├── Root.tsx                   # Central composition registry (multi-video)
-│   ├── shared/                    # Reusable Papercraft Design System (copied from templates/)
+│   ├── shared/                    # Reusable Papercraft Design System (copied from <SKILL_DIR>/templates/)
 │   │   ├── components/
 │   │   │   ├── PaperTabletop.tsx  # Full-bleed tactile table surface (MANDATORY wrapper per scene)
 │   │   │   ├── PaperCutout.tsx    # 2.5D cutout container with dynamic drop-shadow + built-in grain
@@ -521,7 +534,7 @@ const pop = getEmotionSpring(frame, 30, "excited", 5); // ❌ do not do this
 
 ## 5.7 Scene Composition: Fill the Table (Strict)
 
-The #1 gap vs `references/images/`: reference frames are **dense, tactile, full-bleed** (a kraft table with a map print + a paper hand + stacked bills; a street diorama with buildings + crowds + red ribbon roads). Failed output is a **small flat prop floating in a beige void** with three stacked text layers. Follow this exactly:
+The #1 gap vs the reference video (`<SKILL_DIR>/references/video/`): reference frames are **dense, tactile, full-bleed** (a kraft table with a map print + a paper hand + stacked bills; a street diorama with buildings + crowds + red ribbon roads). Failed output is a **small flat prop floating in a beige void** with three stacked text layers. Follow this exactly:
 
 ### Rule 1 — No voids: every scene sits on a full-bleed table
 - Wrap every scene in `PaperTabletop` (default tone `kraft`). A frame that is >40% flat empty background is a fail.
@@ -545,7 +558,7 @@ The #1 gap vs `references/images/`: reference frames are **dense, tactile, full-
 
 ## 5.8 Still-Preview Gate Checklist (run on EVERY still in Step 6)
 
-Score each still 1–5 on: (a) table fills frame, (b) grain visible at 100%, (c) shadow warm + offset, (d) prop silhouette reads, (e) ≤2 text layers. **Any still scoring ≤3 on ANY axis → reshoot the scene before rendering.** A still that looks like flat motion-graphics on beige is a FAIL — compare side-by-side against `references/images/` before approving.
+Score each still 1–5 on: (a) table fills frame, (b) grain visible at 100%, (c) shadow warm + offset, (d) prop silhouette reads, (e) ≤2 text layers. **Any still scoring ≤3 on ANY axis → reshoot the scene before rendering.** A still that looks like flat motion-graphics on beige is a FAIL — compare side-by-side against `<SKILL_DIR>/references/video/frames/` before approving.
 
 ---
 
@@ -563,7 +576,7 @@ flowchart TD
     B -- No --> C["Halt & ask for script"]
     B -- Yes --> D["Step 0: Research every prop/object in the script"]
     D --> E["Step 1: Inspect vo.mp3 & compute duration"]
-    E --> F["Step 2: Audit references/images/ visual style"]
+    E --> F["Step 2: Audit reference video (style + motion)"]
     F --> G["Step 3: Scene beat sheet & asset design spec"]
     G --> H["Step 4: Scaffold src/videos/&lt;slug&gt;/"]
     H --> I["Step 5: Register Composition in Root.tsx"]
@@ -616,14 +629,14 @@ Layer order: [background → body → ...  → foreground]
 2. Read `script.txt`. Split it on blank lines into blocks, each block = one `[tag]` line + its narration (line 1 of the file is the first `[tag]` — there is no title inside). Extract each block's emotion tag: `[excited]`, `[curiously]`, etc.
 
 ### Step 2: Visual Reference Audit
-1. Run `ls references/images/`.
-2. Inspect at least 5 spread frames across the image list.
-3. Identify and document:
+1. Inspect the committed audit frames in `<SKILL_DIR>/references/video/frames/` (at least 6 spread across the runtime). Re-extract from `<SKILL_DIR>/references/video/main_reference.mp4` only if the video changed (see §2).
+3. Identify and document (5-Point Style Audit, see §2):
    - Desk/table texture color and grain.
    - Cutout border style (white die-cut vs raw edge vs embossed).
    - Shadow warmth and angle.
    - Any motion pattern (slide in, pop up, fold, zoom).
-4. Lock the scene treatment: pick a `TABLETOPS` tone + one scenic treatment per beat (printed map, sky wash, tiled floor, diorama box) per §5.7 Rule 1. No scene ships on a plain solid.
+4. Motion audit over 2–3 scene changes (dense extract, see §2): beat durations, transition types, camera behavior. Carry the reference rhythm into the Step 3 beat sheet.
+5. Lock the scene treatment: pick a `TABLETOPS` tone + one scenic treatment per beat (printed map, sky wash, tiled floor, diorama box) per §5.7 Rule 1. No scene ships on a plain solid.
 
 ### Step 3: Scene Beat Sheet & Asset Design Spec
 For each emotion-tagged section of `script.txt`:
@@ -633,7 +646,7 @@ For each emotion-tagged section of `script.txt`:
 - Specify the **composition check**: what fills the table (backdrop + side props), hero prop height ≥35% of frame, where the in-set title sits (Rule 2), and where the paper-hand/scale cue appears.
 
 ### Step 4: Video Scaffolding
-Copy the full `templates/` design system into the project first (`components/`, `hooks/`, `styles/` → `src/shared/`), then create `src/videos/<slug>/` containing:
+2. **Copy the design system, never reference it.** Copy `<SKILL_DIR>/templates/` → `<PROJECT_DIR>/src/shared/` (`components/`, `hooks/`, `styles/`), then create `src/videos/<slug>/` containing:
 - `story.ts` (frame markers, emotion tags, prop research notes).
 - Main video component (e.g., `AcShort.tsx`). Every scene wrapped in `PaperTabletop` — no bare `AbsoluteFill` with a solid color.
 - `scenes/` (individual animated scenes, one file per beat or scene group).
@@ -650,7 +663,7 @@ npx remotion still <CompositionId> out/<slug>/still_scene1.png --frame=30
 npx remotion still <CompositionId> out/<slug>/still_scene2.png --frame=90
 ```
 Optional suffix for variants: `out/<slug>/still_scene1_gosong.png`, `out/<slug>/still_scene8_outro.png`.
-Score EVERY still against the §5.8 gate checklist (table fills frame, grain visible, warm shadow, silhouette reads, ≤2 text layers) side-by-side with `references/images/`. Any axis ≤3 → reshoot the scene, do not proceed to Step 7.
+Score EVERY still against the §5.8 gate checklist (table fills frame, grain visible, warm shadow, silhouette reads, ≤2 text layers) side-by-side with `<SKILL_DIR>/references/video/frames/`. Any axis ≤3 → reshoot the scene, do not proceed to Step 7.
 
 ### Step 7: Full Video Render
 The final mp4 lives INSIDE the slug folder alongside its stills — never loose in `out/` root:

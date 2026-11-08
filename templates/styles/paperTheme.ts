@@ -2,7 +2,7 @@ import type { CSSProperties } from "react";
 
 /**
  * paperTheme — canonical art-direction tokens for the papercraft look.
- * Values sampled from references/images/: kraft tabletops, off-white paper,
+ * Values sampled from references/video/frames/: kraft tabletops, off-white paper,
  * one muted red accent, dusty secondaries. Never use pure-neon fills
  * (cyan water, #FF0000 bars) — mute brights toward paper (see WATER/HEAT).
  */
