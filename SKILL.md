@@ -44,20 +44,35 @@ This skill runs as `/gud-animated-shorts {title}` in **exactly two stages**. The
 Trigger: a `vo.mp3` file appears in `src/videos/<slug>/` next to its `script.txt`. The user gives **no further prompt** — proceed automatically:
 
 1. Verify the gate: both `vo.mp3` and `script.txt` exist in the same folder. If `script.txt` is missing, STOP and ask for it (never invent timing).
-2. Continue with Steps 0–7 in §6 (prop research → duration → visual audit → beat sheet → scaffold → register → stills → render).
+2. **Copy the voiceover into `public/` immediately** — Remotion's `<Audio src={staticFile(...)}>` can ONLY load from `public/`, never from `src/`. Run this first:
+   ```bash
+   mkdir -p public/<slug> && cp src/videos/<slug>/vo.mp3 public/<slug>/vo.mp3
+   ```
+   The component then loads it as `staticFile("<slug>/vo.mp3")` — e.g. `staticFile("rice-cooker-nasi-matang/vo.mp3")`. **Never place per-video audio loose at `public/` root** (`public/rice-cooker-vo.mp3` is a fail — same rule as `out/`).
+3. Continue with Steps 0–7 in §6 (prop research → duration → visual audit → beat sheet → scaffold → register → stills → render).
+
+> [!NOTE]
+> **Two homes for `vo.mp3`, two jobs:** `src/videos/<slug>/vo.mp3` is the drop point (triggers Stage B, read by `ffprobe` in Step 1). `public/<slug>/vo.mp3` is the runtime copy (loaded by `<Audio>`). Keep both — never edit the `public/` copy, re-copy from `src/` if the VO changes.
+> `public/textures/` and `public/sfx/` stay shared-only. Any per-video file (`<slug>-vo.mp3`, `paper-grain.png`, per-video images) sitting loose at `public/` root is a fail — move it into `public/<slug>/`.
 
 > [!CAUTION]
 > **Hard Stop Rule (Stage B):** if `script.txt` is missing from the folder, STOP IMMEDIATELY. Prompt the user:
 > *"Saya menemukan `vo.mp3` tapi belum ada `script.txt` di folder yang sama. Silakan jalankan `/gud-animated-shorts {judul}` dulu untuk membuat script-nya."*
 
 ### Audio Inspection & Timing Extraction
-Once `vo.mp3` is provided, calculate the total video frames at **30 fps**:
+Once `vo.mp3` is provided, calculate the total video frames at **30 fps** (inspect the `src/` drop-point copy):
 ```bash
 # Get duration in seconds
-ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 vo.mp3
+ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 src/videos/<slug>/vo.mp3
 ```
 Formula:
 $$\text{durationInFrames} = \lceil \text{durationInSeconds} \times 30 \rceil$$
+
+The playback copy lives at `public/<slug>/vo.mp3` (copied at Stage B start) and is loaded in the component as:
+```tsx
+import { Audio, staticFile } from "remotion";
+<Audio src={staticFile("<slug>/vo.mp3")} />
+```
 
 ### Script Format with Emotion Tags
 `script.txt` must follow the format guide (`references/educational-video-format.md`) and use ONLY canonical tags (`curiously, excited, shocked, confused, thoughtful, serious, triumphant, sad, whisper`).
@@ -130,13 +145,10 @@ project-root/
 │       ├── image_002.jpg
 │       └── ...
 ├── public/
-│   ├── textures/
-│   │   ├── kraft-paper.jpg        # Shared paper & fiber grain
-│   │   └── craft-rough.png
-│   └── sfx/                       # Shared stop-motion paper sound effects
-│       ├── paper-slide.mp3
-│       ├── paper-pop.mp3
-│       └── paper-thud.mp3
+│   ├── <slug>/                    # Per-video static assets — NEVER loose files at public/ root
+│   │   └── vo.mp3                 # Copied from src/videos/<slug>/vo.mp3 at Stage B start; loaded via staticFile("<slug>/vo.mp3")
+│   ├── textures/                  # Shared paper & fiber grain (e.g. kraft-paper.jpg) — NOT per-video
+│   └── sfx/                       # Shared stop-motion paper sound effects (paper-slide.mp3, ...)
 ├── src/
 │   ├── index.ts                   # Remotion entry point
 │   ├── Root.tsx                   # Central composition registry (multi-video)
@@ -596,10 +608,11 @@ Layer order: [background → body → ...  → foreground]
 ---
 
 ### Step 1: Pre-flight Verification
-1. Check `vo.mp3` existence and run:
+1. Check `vo.mp3` existence and run (paths are exact — `src/` copy for inspection):
    ```bash
-   ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 vo.mp3
+   ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 src/videos/<slug>/vo.mp3
    ```
+2. Confirm the runtime copy exists at `public/<slug>/vo.mp3` (re-copy from `src/` if missing or stale — the `<Audio>` component loads `staticFile("<slug>/vo.mp3")`, never the `src/` path).
 2. Read `script.txt`. Split it on blank lines into blocks, each block = one `[tag]` line + its narration (line 1 of the file is the first `[tag]` — there is no title inside). Extract each block's emotion tag: `[excited]`, `[curiously]`, etc.
 
 ### Step 2: Visual Reference Audit
