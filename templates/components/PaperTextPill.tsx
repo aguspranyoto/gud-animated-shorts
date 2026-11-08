@@ -10,8 +10,10 @@ export interface PaperTextPillProps {
 
 /**
  * PaperTextPill — caption card. Rock-solid by design: NO jitter, NO rotation,
- * NO wiggle hook. Captions are the single most visible element; readability
- * beats texture. Only the word-highlight layer (see SKILL.md §7b) animates.
+ * NO wiggle hook. Style-locked to the reference caption (image_010/070):
+ * lowercase, weight 500, dark-on-white pill — NOT shouty uppercase 800.
+ * Captions are the single most visible element; readability beats texture.
+ * Only the word-highlight layer (see SKILL.md §7b) animates.
  */
 export const PaperTextPill: React.FC<PaperTextPillProps> = ({
   text,
@@ -48,10 +50,10 @@ export const PaperTextPill: React.FC<PaperTextPillProps> = ({
         <span
           style={{
             fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-            fontSize: "36px",
-            fontWeight: 800,
+            fontSize: "38px",
+            fontWeight: 500,
             color: textColor,
-            letterSpacing: "-0.6px",
+            letterSpacing: "-0.2px",
             lineHeight: 1.35,
           }}
         >

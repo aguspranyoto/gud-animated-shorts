@@ -15,8 +15,8 @@ export const PaperCutout: React.FC<PaperCutoutProps> = ({
   children,
   elevation = 1,
   liftProgress = 0,
-  whiteBorder = true,
-  borderWidth = 3,
+  whiteBorder = false,
+  borderWidth = 10,
   className = "",
   style = {},
 }) => {
@@ -41,13 +41,28 @@ export const PaperCutout: React.FC<PaperCutoutProps> = ({
     >
       <div
         style={{
-          border: whiteBorder ? `${borderWidth}px solid #FAF8F5` : "none",
-          borderRadius: "6px",
+          position: "relative",
+          border: whiteBorder ? `${borderWidth}px solid #FFFDF8` : "none",
+          borderRadius: "18px 22px 20px 24px",
           overflow: "hidden",
-          backgroundColor: "#FAF8F5",
+          backgroundColor: "#FFFDF8",
         }}
       >
         {children}
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            backgroundImage:
+              "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'" +
+              "%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' " +
+              "stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' " +
+              "opacity='0.6'/%3E%3C/svg%3E\")",
+            opacity: 0.32,
+            mixBlendMode: "multiply",
+            pointerEvents: "none",
+          }}
+        />
       </div>
     </div>
   );

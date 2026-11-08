@@ -140,16 +140,16 @@ project-root/
 ├── src/
 │   ├── index.ts                   # Remotion entry point
 │   ├── Root.tsx                   # Central composition registry (multi-video)
-│   ├── shared/                    # Reusable Papercraft Design System
+│   ├── shared/                    # Reusable Papercraft Design System (copied from templates/)
 │   │   ├── components/
-│   │   │   ├── PaperCutout.tsx    # 2.5D cutout container with dynamic drop-shadow
+│   │   │   ├── PaperTabletop.tsx  # Full-bleed tactile table surface (MANDATORY wrapper per scene)
+│   │   │   ├── PaperCutout.tsx    # 2.5D cutout container with dynamic drop-shadow + built-in grain
 │   │   │   ├── PopUpPaper.tsx     # 3D folding paper flap/pop-up hinge
-│   │   │   ├── PaperTextPill.tsx  # Stop-motion text badge/caption
-│   │   │   └── PaperTabletop.tsx  # Textured desk background with lighting gradient
+│   │   │   └── PaperTextPill.tsx  # Stop-motion text badge/caption (lowercase, weight 500)
 │   │   ├── hooks/
 │   │   │   └── useStopMotion.ts   # Stepped frames + useSettleWiggle (bounded settle wobble, then frozen)
 │   │   └── styles/
-│   │       └── paperTheme.ts
+│   │       └── paperTheme.ts      # Canonical palette: PAPER.*, TABLETOPS.*, grain, warmShadow (MANDATORY — never hand-pick hex)
 │   └── videos/                    # Individual video projects
 │       ├── pesawat-terbang/       # Video 1
 │       │   ├── vo.mp3             # Voiceover audio
@@ -454,16 +454,22 @@ export const PaperTextPill: React.FC<PaperTextPillProps> = ({ text }) => {
 A `PaperCutout` wrapper alone does NOT make papercraft. Flat digital UI inside a drop-shadow still looks digital. Every cutout must pass these material rules, or the still-preview gate (Step 6) FAILS.
 
 ### Banned (instant papercraft fail)
-- **Emoji as characters/props** (😊 ❄️ 💨 🛏️ ⛄). Emoji are glossy digital glyphs — they kill the paper illusion on sight. Build faces, weather, and objects from paper SVG/CSS shapes (circle head + paper-dot eyes + cut smile strip).
-- **Inset shadows / glassmorphism / clean CSS gradients** as surfaces (`box-shadow: inset ...`, `repeating-linear-gradient` wallpaper, glossy temp displays). Real paper has no inner glow. All surfaces = flat matte color + grain overlay.
+- **Emoji anywhere on screen** — as characters/props (😊 ❄️ 💨 🛏️ ⛄) AND inside badges/titles/captions (🌡️ in "HUKUM FISIKA 🌡️", 🔥 in "KOMPOR GAS 🔥", ⏱️ in "TIMER ⏱️"). Emoji are glossy digital glyphs — they kill the paper illusion on sight. Build faces, weather, and objects from paper SVG/CSS shapes (circle head + paper-dot eyes + cut smile strip). Badge emphasis comes from paper sunburst/star cutouts, never emoji.
+- **Inset shadows / glassmorphism / clean CSS gradients** as surfaces (`box-shadow: inset ...`, `repeating-linear-gradient` wallpaper, glossy temp displays). Real paper has no inner glow. All surfaces = flat matte color + grain overlay. (The single exception: the diagonal window-light wash inside `PaperTabletop`, which simulates photographed light, not a digital surface.)
 - **Thin 2–5px clean borders** passed off as "die-cut". On a 1080×1920 canvas a real cardstock edge reads at **8–12px**, off-white `#FFFDF8`, with a slightly irregular radius (e.g. `18px 22px 20px 24px` — never four identical corners).
-- **Text-label boxes as props** (a rounded rectangle that just says "SELIMUT TEBAL 🛏️" is a caption, not a blanket). Every prop needs a recognizable **silhouette first**, text second.
+- **Text-label boxes as props** (a rounded rectangle that just says "SELIMUT TEBAL" is a caption, not a blanket). Every prop needs a recognizable **silhouette first**, text second.
 
 ### Mandatory layer stack (every cutout)
 1. **Base silhouette** — the shape that reads at a glance (AC body, blanket-covered sleeper, droplet).
 2. **1–2 detail layers** — vent slats, LED strip, quilt stitch lines, droplet shine — as separate stacked paper strips, NOT painted-on gradients.
-3. **Grain overlay** — SVG `feTurbulence` fiber or `staticFile("textures/kraft-paper.jpg")` at **opacity ≥ 0.25** on the cutout itself, not only on the tabletop. Tabletop-only grain is invisible after video compression.
+3. **Grain overlay** — built into `PaperCutout` by default (feTurbulence fiber at opacity 0.32, `mixBlendMode: multiply`) and available as `grainOverlay()` from `shared/styles/paperTheme.ts`. Never remove it. Tabletop-only grain is invisible after video compression.
 4. **Warm cast shadow** — `rgba(35, 25, 20, α)` via `PaperCutout` elevation. No neutral-gray or black-only shadows.
+
+### Art-direction tokens (mandatory imports)
+Never hand-pick hex codes per scene. Import the canonical palette from `shared/styles/paperTheme.ts`:
+- `PAPER.paper` `#FFFDF8` (paper surface), `PAPER.ink` `#2A2320` (text ink — never pure `#000`), `PAPER.accent` `#D8402F` (the ONE red).
+- **Muted diagram colors only:** water = `PAPER.water` `#6FA8BF` (NOT neon cyan), heat = `PAPER.heat` `#C4452B` (NOT pure red). Saturated `#00BFFF` fills and `#FF0000` bars are a papercraft fail — mute every bright toward paper.
+- Real cardstock edge = `10px solid #FFFDF8`, radius `18px 22px 20px 24px` (never-identical corners). This is the `PaperCutout` default — do not shrink it to 2–5px sticker borders.
 
 ### Static earth rule
 Walls, room panels, tabletops, and background decor are the **table — tables don't shake**. They get **zero transform, zero wiggle, zero spring**. Any `rotate`/`translate` on a background element is a fail.
@@ -498,6 +504,36 @@ const pop = getEmotionSpring(frame, 30, "excited", 5); // ❌ do not do this
 ### Where wiggle is allowed
 - **Allowed:** ONE hero character/prop per scene, settle window only (12–20 frames post-entrance) or low idle (`intensity ≤ 0.5`, rotate ≤ 0.6°).
 - **Forbidden:** walls, room panels, tabletops, title badges, question badges, captions, subtitles, `PaperTextPill`. If everything moves, nothing feels like stop-motion. **Default state = FROZEN.** Motion must earn its place in the beat sheet (Step 3) with a concrete verb — "settles 0.5° over 14 frames", not "wiggles".
+
+---
+
+## 5.7 Scene Composition: Fill the Table (Strict)
+
+The #1 gap vs `references/images/`: reference frames are **dense, tactile, full-bleed** (a kraft table with a map print + a paper hand + stacked bills; a street diorama with buildings + crowds + red ribbon roads). Failed output is a **small flat prop floating in a beige void** with three stacked text layers. Follow this exactly:
+
+### Rule 1 — No voids: every scene sits on a full-bleed table
+- Wrap every scene in `PaperTabletop` (default tone `kraft`). A frame that is >40% flat empty background is a fail.
+- The table is never a plain solid: it carries the window-light wash + fiber grain (built into the component) AND one scenic treatment per beat: printed map/contour backdrop, painted sky wash, tiled floor strips, or a shallow diorama base (backdrop wall + floor fold).
+- Props occupy the middle 60% of the frame; "one small prop centered in an empty field" is a fail — scale the hero prop up or add table dressing (scattered paper bits, ribbon trails, side props).
+
+### Rule 2 — Titles live IN the set, not in floating badges
+- Beat titles are 3D set pieces: a folded paper box labeled "PAJAK", a standing signboard, letters pinned on the backdrop wall — NEVER a floating rounded badge hovering over empty space.
+- Maximum **two text layers per frame**: (1) the in-set title OR no title, (2) ONE `PaperTextPill` caption at the bottom. The triple stack (top badge + mid blue box + bottom caption) is banned.
+- Explainers that need a mid-screen callout (e.g. "SUHU TERKUNCI DI 100°C") must be a paper tag **pinned to the prop itself** (tied with string, taped corner, arrow strip) — not a floating blue rectangle beside it.
+
+### Rule 3 — Props are silhouettes first, at hero scale
+- A thermometer, rice cooker, or pan must be instantly recognizable by outline at thumbnail size. If the prop reads as "rounded rectangle with text", redesign the silhouette (bulb + tube + tick strip for a thermometer; body + lid knob + side handles for a pot).
+- The hero prop per scene fills **≥35% of frame height**. Thumbnail-sized props centered in a void are a fail.
+
+### Rule 4 — Hands & scale cues (one per video minimum)
+- References repeatedly use a paper cutout hand to place/point at props (pinning a bill, pointing at a map). Include at least one paper-hand interaction in every video — it instantly sells scale and tactility.
+- Cheap scale cues when no hand: scattered coins, paper clips, string, tape corners, ruler strips.
+
+---
+
+## 5.8 Still-Preview Gate Checklist (run on EVERY still in Step 6)
+
+Score each still 1–5 on: (a) table fills frame, (b) grain visible at 100%, (c) shadow warm + offset, (d) prop silhouette reads, (e) ≤2 text layers. **Any still scoring ≤3 on ANY axis → reshoot the scene before rendering.** A still that looks like flat motion-graphics on beige is a FAIL — compare side-by-side against `references/images/` before approving.
 
 ---
 
@@ -574,17 +610,19 @@ Layer order: [background → body → ...  → foreground]
    - Cutout border style (white die-cut vs raw edge vs embossed).
    - Shadow warmth and angle.
    - Any motion pattern (slide in, pop up, fold, zoom).
+4. Lock the scene treatment: pick a `TABLETOPS` tone + one scenic treatment per beat (printed map, sky wash, tiled floor, diorama box) per §5.7 Rule 1. No scene ships on a plain solid.
 
 ### Step 3: Scene Beat Sheet & Asset Design Spec
 For each emotion-tagged section of `script.txt`:
 - Assign a frame range `[startFrame, endFrame]`.
 - List which props are visible and at which Z-elevation.
 - Describe the **specific animation action** for that beat (do not use vague descriptions like "it moves" — be concrete: "AC indoor unit slides in from right at elevation Z2, overshoots 8px, settles").
+- Specify the **composition check**: what fills the table (backdrop + side props), hero prop height ≥35% of frame, where the in-set title sits (Rule 2), and where the paper-hand/scale cue appears.
 
 ### Step 4: Video Scaffolding
-Create `src/videos/<slug>/` containing:
+Copy the full `templates/` design system into the project first (`components/`, `hooks/`, `styles/` → `src/shared/`), then create `src/videos/<slug>/` containing:
 - `story.ts` (frame markers, emotion tags, prop research notes).
-- Main video component (e.g., `AcShort.tsx`).
+- Main video component (e.g., `AcShort.tsx`). Every scene wrapped in `PaperTabletop` — no bare `AbsoluteFill` with a solid color.
 - `scenes/` (individual animated scenes, one file per beat or scene group).
 - `assets/` (SVG/CSS definitions for props).
 
@@ -599,7 +637,7 @@ npx remotion still <CompositionId> out/<slug>/still_scene1.png --frame=30
 npx remotion still <CompositionId> out/<slug>/still_scene2.png --frame=90
 ```
 Optional suffix for variants: `out/<slug>/still_scene1_gosong.png`, `out/<slug>/still_scene8_outro.png`.
-Review each still for: papercraft texture present? shadow correct? prop recognizable?
+Score EVERY still against the §5.8 gate checklist (table fills frame, grain visible, warm shadow, silhouette reads, ≤2 text layers) side-by-side with `references/images/`. Any axis ≤3 → reshoot the scene, do not proceed to Step 7.
 
 ### Step 7: Full Video Render
 The final mp4 lives INSIDE the slug folder alongside its stills — never loose in `out/` root:
@@ -614,7 +652,7 @@ npx remotion render <CompositionId> out/<slug>/<slug>.mp4
 Captions are the **single most visible** element. Bad captions kill the vibe. Follow these rules absolutely:
 
 ### 7a. Length Rule
-- **Maximum 4–5 words per caption card.**
+- **Maximum 4–5 words per caption card. This is ENFORCED by the §5.8 gate** — a still showing an 8+ word caption (e.g. "Selama ada air, suhu panci GAK BISA lewat dari 100°C!") FAILS the text-layer check. Split first, then render.
 - If a script line is long (e.g., "AC bekerja dengan cara memindahkan panas dari dalam ruangan ke luar ruangan"), **split it into multiple sequential caption cards**, each showing 4–5 words timed to the voice-over.
 - Never display a full sentence at once.
 
@@ -635,10 +673,10 @@ export const PaperCaption: React.FC<CaptionProps> = ({ words, activeWordIndex })
         <span
           key={i}
           style={{
-            fontSize: "40px",
-            fontWeight: 900,
-            color: i === activeWordIndex ? "#FF4B2B" : "#1C1917",         // active = accent color
-            textShadow: i === activeWordIndex ? "0 2px 12px rgba(255,75,43,0.4)" : "none",
+            fontSize: "38px",
+            fontWeight: 500,                                                // match PaperTextPill: quiet 500, not shouty 900
+            color: i === activeWordIndex ? "#D8402B" : "#2A2320",            // PAPER.accent / PAPER.ink
+            textShadow: i === activeWordIndex ? "0 2px 12px rgba(216,64,47,0.4)" : "none",
             transform: i === activeWordIndex ? "scale(1.08)" : "scale(1)",
             transition: "none", // no CSS transition — step-change per stop-motion frame
             display: "inline-block",
@@ -677,3 +715,4 @@ const activeWordIndex = Math.min(
 7. **Always sync spring dynamics to emotion tags.** The motion physics is the acting — treat it seriously.
 8. **Captions: 4–5 words max, with word-highlight active animation.** Never dump a full sentence.
 9. **Render per-scene stills before full render.** Catch papercraft style failures early, not at the end.
+10. **Fill the table, cap text at two layers, score every still.** Full-bleed `PaperTabletop` in every scene, titles live in the set (§5.7), §5.8 gate before render.
