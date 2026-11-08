@@ -592,16 +592,19 @@ Create `src/videos/<slug>/` containing:
 Update `src/Root.tsx` by importing the new component and appending a `<Composition />` entry with exact `durationInFrames`, `fps={30}`, `width={1080}`, `height={1920}`.
 
 ### Step 6: Per-Scene Still Preview
-Render one still per major scene before assembling the final render:
+Render one still per major scene before assembling the final render. **Never dump files into `out/` root — every video gets its own `out/<slug>/` folder:**
 ```bash
-npx remotion still <CompositionId> out/still_scene1.png --frame=30
-npx remotion still <CompositionId> out/still_scene2.png --frame=90
+mkdir -p out/<slug>
+npx remotion still <CompositionId> out/<slug>/still_scene1.png --frame=30
+npx remotion still <CompositionId> out/<slug>/still_scene2.png --frame=90
 ```
+Optional suffix for variants: `out/<slug>/still_scene1_gosong.png`, `out/<slug>/still_scene8_outro.png`.
 Review each still for: papercraft texture present? shadow correct? prop recognizable?
 
 ### Step 7: Full Video Render
+The final mp4 lives INSIDE the slug folder alongside its stills — never loose in `out/` root:
 ```bash
-npx remotion render <CompositionId> out/<slug>.mp4
+npx remotion render <CompositionId> out/<slug>/<slug>.mp4
 ```
 
 ---
