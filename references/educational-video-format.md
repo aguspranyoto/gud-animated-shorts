@@ -14,8 +14,8 @@
 | ------------ | ------------------------------------------------------------------ |
 | Target market | Indonesia                                                         |
 | Language     | Casual Indonesian                                                  |
-| Address      | `kamu` ("you" — never gue/lu, following both reference videos)     |
-| Duration     | 60–90 seconds (reference videos: 66 and 88 seconds)                |
+| Address      | `kamu` ("you" — never gue/lu, following all three reference videos)     |
+| Duration     | 60–90 seconds (reference videos: 66, 88, and 89 seconds)               |
 | Platform     | YouTube Shorts, TikTok, Reels                                      |
 | Format       | Educational animation                                              |
 | Tone         | Cheerful, funny, energetic                                         |
@@ -27,7 +27,7 @@
 
 ## 2. Storytelling Formula
 
-Videos must open with a **SCENE**, not an explanation. The standard 7-beat flow below is distilled from both reference transcripts in Section 9 (road = history of asphalt, 66s; fridge = dead fridge after moving house, 88s).
+Videos must open with a **SCENE**, not an explanation. The standard 7-beat flow below is distilled from the reference transcripts in Section 9 (road = history of asphalt, 66s; fridge = dead fridge after moving house, 88s) and matches the pacing of the visual reference (`<SKILL_DIR>/references/video/main_reference.mp4`, 89s, tax episode).
 
 ### Beat 0. Bridge (optional, 1 sentence) — "It works just like..."
 
@@ -47,7 +47,7 @@ No "hey guys", no definitions, no warm-up. Viewers immediately see something wro
 
 ### Beat 2. The "but..." chain ("tapi...") — solutions tried, failed, repeated
 
-The signature pattern of both references: the most intuitive solution is tried AND visually failed, then replaced with a new solution that also fails — **2 to 4 rounds**. The connective is always *tapi* (but) or *masalahnya* (the problem is). A failed attempt = 1 sentence of visual action, not a lecture.
+The signature pattern of all three references: the most intuitive solution is tried AND visually failed, then replaced with a new solution that also fails — **2 to 4 rounds**. The connective is always *tapi* (but) or *masalahnya* (the problem is). A failed attempt = 1 sentence of visual action, not a lecture.
 
 > Road: *jadi kamu taburin batu* → *tapi batunya gede-gede, badan ikut loncat-loncat* → *jadi tanahnya kamu padatin dulu, tumpuk batu pecah lapis demi lapis* → *tapi air bikin bawahnya lembek* → *jadi tengah jalan dibikin lebih tinggi* → *masalahnya batu mudah lepas, debu kemana-mana* → *akhirnya batunya kamu campur aspal panas.*
 >
@@ -104,7 +104,7 @@ Close with ONE hook question into the next episode, not a dry conclusion. (Excep
 
 Every script must carry emotion tags so the voice sounds natural, not monotonous.
 
-> ⚠️ **IMPORTANT:** only the tags below are recognized by the skill (see `references/emotion-spring-matrix.md` — each tag triggers different spring/motion). Tags outside the list (`explaining`, `enthusiastic`, `amazed`, `energetic`, `playful`, `whispering`, `curious`, `seriously`) are NOT recognized and fall back to generic motion.
+> ⚠️ **IMPORTANT:** only the tags below are recognized by the skill (see `<SKILL_DIR>/references/emotion-spring-matrix.md` — each tag triggers different spring/motion). Tags outside the list (`explaining`, `enthusiastic`, `amazed`, `energetic`, `playful`, `whispering`, `curious`, `seriously`) are NOT recognized and fall back to generic motion.
 
 | Emotion tag | Usage (EN) | Contoh script (ID) |
 | ----------- | ---------- | ------------------ |
@@ -232,9 +232,11 @@ Make videos like someone tinkering with a friend: try, fail, tear apart, *"pante
 
 ---
 
-## 9. Reference Transcripts (Rhythm Reference, NOT Visual Reference)
+## 9. Reference Transcripts (Rhythm Reference — Narration Only)
 
-The two transcripts below are word-for-word narration from the reference videos, transcribed from audio. Use as reference for rhythm, sentence length, and the *"tapi..."* chain pattern. The references' visuals/animation (smooth 3D renders) are NOT the reference — visuals follow the papercraft style in `SKILL.md`. Transcripts stay in the original Indonesian.
+The two transcripts below are word-for-word narration from the road and fridge reference videos, transcribed from audio. Use as reference for rhythm, sentence length, and the *"tapi..."* chain pattern. Transcripts stay in the original Indonesian.
+
+> **Scope — read carefully.** This section covers NARRATION only. For VISUALS, the reference is `<SKILL_DIR>/references/video/main_reference.mp4` and its audit frames in `<SKILL_DIR>/references/video/frames/` (tactile papercraft: full-bleed tables, in-set titles, paper hands — see `SKILL.md` §2, §5.7). To verify "1 sentence = 1 visual" (§3), pair a transcript line with the matching audit frame, don't invent visuals from the text alone.
 
 ### 9a. Reference 1 — Asphalt Road (66 seconds)
 
@@ -310,9 +312,9 @@ Habis ini mau kita bongkar apa?
 
 ## 10. Script-First Mode (Two-Stage Pipeline)
 
-The skill can be asked to create a script from a TITLE alone, without `vo.mp3`:
+The pipeline is defined ONCE in `SKILL.md` §1 — this section is a summary, not a second definition. If they ever disagree, `SKILL.md` wins.
 
-- **Stage 1** — user gives a topic title. The skill writes `script.txt` following all standards above, then STOPS. No scenes, no rendering.
-- **Stage 2** — user converts the script to `vo.mp3` (TTS) and tells it to continue. The skill runs normally per `SKILL.md` (vo.mp3 + script.txt gate, duration calc, visual dissection, scaffold, render).
+- **Stage A (Stage 1)** — user gives a topic title. Mandatory topic research → `RESEARCH.md` → `script.txt` following all standards above, then STOPS. No scenes, no rendering.
+- **Stage B (Stage 2)** — user drops `vo.mp3` next to `script.txt` in `src/videos/<slug>/` with no further prompt. The skill proceeds automatically per `SKILL.md` (gate → copy to `public/<slug>/` → duration → scaffold → render).
 
 Why two stages: duration, pacing, and scene cuts are all derived from `vo.mp3` as the single source of truth. A script not yet locked into audio must never be animated directly.
