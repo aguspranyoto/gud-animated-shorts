@@ -25,6 +25,10 @@ export const PAPER = {
   /** Dusty secondaries for diagrams. */
   sage: "#8AA07A",
   dustyBlue: "#7C8DA0",
+  /** Skin kraft for the giant placing hand (cf. frame-004). */
+  skin: "#C9A87B",
+  /** Skin shadow side (curled fingers, arm edge). */
+  skinShade: "#B8946A",
 } as const;
 
 export const TABLETOPS = {
@@ -48,24 +52,34 @@ export const PILL_RADIUS = "26px";
 export const warmShadow = (x: number, y: number, blur: number, alpha: number): string =>
   `${x}px ${y}px ${blur}px rgba(35, 25, 20, ${alpha})`;
 
-/** Procedural paper-fiber grain (SVG feTurbulence data URI). */
-export const FIBER_GRAIN =
-  `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'` +
+/**
+ * Raw grain data-URIs (no url() wrapper). TWO consumers, two formats:
+ *  - CSS `backgroundImage` needs url("data:...") → use FIBER_GRAIN / FIBER_BLOTCH.
+ *  - SVG <image href> needs raw data:... → use GRAIN_SRC / BLOTCH_SRC.
+ * Mixing them 404s (the proof-still failure). Never hand-wrap; import the right one.
+ */
+export const GRAIN_SRC =
+  `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'` +
   `%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' ` +
   `stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' ` +
-  `opacity='0.6'/%3E%3C/svg%3E")`;
+  `opacity='0.6'/%3E%3C/svg%3E`;
+
+/** Procedural paper-fiber grain for CSS backgrounds. */
+export const FIBER_GRAIN = `url("${GRAIN_SRC}")`;
+
+export const BLOTCH_SRC =
+  `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='520' height='520'` +
+  `%3E%3Cfilter id='b'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.035' numOctaves='3' ` +
+  `stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23b)' ` +
+  `opacity='0.55'/%3E%3C/svg%3E`;
 
 /**
- * Large-scale paper mottling (low-frequency blotches).
+ * Large-scale paper mottling (low-frequency blotches) for CSS backgrounds.
  * Fine FIBER_GRAIN alone crushes in H264 — blotches survive compression
  * and are what reads as "paper" on phone screens (cf. frame-004 hand/table).
  * Always paired with FIBER_GRAIN, never alone.
  */
-export const FIBER_BLOTCH =
-  `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='520' height='520'` +
-  `%3E%3Cfilter id='b'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.035' numOctaves='3' ` +
-  `stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23b)' ` +
-  `opacity='0.55'/%3E%3C/svg%3E")`;
+export const FIBER_BLOTCH = `url("${BLOTCH_SRC}")`;
 
 /**
  * Grain overlay style for cutouts (§5.5: grain opacity ≥ 0.25 ON the cutout,

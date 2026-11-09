@@ -615,7 +615,17 @@ For each emotion-tagged section of `script.txt`:
 - `story.ts` (frame markers, emotion tags, prop research notes).
 - Main video component (e.g., `AcShort.tsx`). Every scene wrapped in `PaperTabletop` — no bare `AbsoluteFill` with a solid color.
 - `scenes/` (individual animated scenes, one file per beat or scene group).
-- `assets/` (SVG/CSS definitions for props).
+- `assets/` (SVG path definitions for props — see Step 4a).
+
+### Step 4a: Prop Asset Generation (SVG-first, no hand-drawn divs)
+Organic props (hands, stones, feathers, characters) MUST come from traced/generated SVG paths rendered via `SvgCutout` — NEVER from stacked `div`+`border-radius` (that failure mode produced the "sausage fingers" still). Geometric cards/boxes may stay `div`+`PaperCutout`.
+1. **List SVG props** in the Step 3 beat sheet (hero prop per scene ≥35% frame height). Non-listed organic shape found in code = fail.
+2. **Generate per prop (lazy order — first that works wins):**
+   a. Trace: screenshot/crop the closest reference (own `references/video/frames/` or licensed stock) → Figma/Inkscape Trace Bitmap → copy `d`. Best for hands — nothing beats the real frame-004 silhouette.
+   b. Image-gen → vectorize: prompt "flat paper cutout silhouette of [prop], single solid [PAPER.*] color, top-down, no shading, no background" → `rembg` → `vtracer --mode polygon` → copy `d`.
+   c. Figma blob: rough shape → Simplify → Export SVG → copy `d`. Last resort — trace first.
+3. **Store** each path as `src/videos/<slug>/assets/<prop>.ts` (`export const HAND_D = "M..."`) with its `viewBox`. Render via `<SvgCutout d viewBox w fill elevation detail>` — `fill` from `PAPER.*` tokens only, `detail` for fold/knuckle strokes (clipped to silhouette, under grain).
+4. **Gate:** zoom the SVG to 200% next to its source — silhouette must match at a glance. Blobby-but-wrong beats precise-but-soulless; re-trace, don't nudge divs.
 
 ### Step 5: Register Composition
 Update `src/Root.tsx` by importing the new component and appending a `<Composition />` entry with exact `durationInFrames`, `fps={30}`, `width={1080}`, `height={1920}`.

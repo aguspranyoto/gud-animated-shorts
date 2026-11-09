@@ -32,7 +32,7 @@ export const shadowForElevation = (elevation: number): ShadowSpec => ({
   y: seg(elevation, YS),
   blur: seg(elevation, BLURS),
   alpha: seg(elevation, ALPHAS),
-};
+});
 
 /** CSS drop-shadow string from an elevation value. */
 export const shadowCss = (elevation: number): string => {

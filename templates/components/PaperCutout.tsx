@@ -1,6 +1,6 @@
 import React from "react";
 import { FIBER_BLOTCH, FIBER_GRAIN } from "../styles/paperTheme";
-import { shadowForElevation } from "./shadowRig";
+import { shadowCss } from "./shadowRig";
 
 export interface PaperCutoutProps {
   children: React.ReactNode;
@@ -30,11 +30,8 @@ export const PaperCutout: React.FC<PaperCutoutProps> = ({
   //   Z4 hero-high → far faint halo (α .14, blur 38) — giant hand territory
   // A shadow that's too dark + too sharp at high elevation = sticker look.
   // A missing shadow = floating-in-void fail (§5.8 gate auto-FAILS).
-  // Single source of truth: shadowRig.ts (pure, node-testable).
-  // This component only formats the CSS — the ladder lives there.
+  // Single source of truth: shadowCss() from shadowRig.ts (pure, node-testable).
   const currentElevation = elevation + liftProgress * 2.5;
-  const sh = shadowForElevation(currentElevation);
-  const shadowCss = `drop-shadow(${sh.x}px ${sh.y}px ${sh.blur}px rgba(35, 25, 20, ${sh.alpha}))`;
 
   // whiteBorder guide: silhouette props (stone, feather, hand, astronaut)
   // MUST use whiteBorder={false} — a rectangular white box behind a
@@ -48,7 +45,7 @@ export const PaperCutout: React.FC<PaperCutoutProps> = ({
       style={{
         display: "inline-block",
         position: "relative",
-        filter: shadowCss,
+        filter: shadowCss(currentElevation),
         transform: `translateY(${-liftProgress * 15}px) scale(${1 + liftProgress * 0.03})`,
         transition: "filter 0.05s ease-out",
         ...style,
