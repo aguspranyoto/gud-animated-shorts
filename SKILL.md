@@ -311,63 +311,21 @@ export const useSettleWiggle = (
 };
 ```
 
-### 2. Multi-Tier Dynamic Drop Shadows
-In papercraft, depth is conveyed through shadows. As an element lifts off the desk, its shadow shifts further down-right, blurs, and becomes more transparent:
+### 2. Multi-Tier Dynamic Drop Shadows (THE depth cue — never eyeball)
+In papercraft, depth is conveyed through shadows. Reference: `references/video/frames/frame-004.jpg` — the giant hand reads 2.5D ONLY because its shadow is far, soft, faint while the box shadow is tight and dark. As an element lifts off the desk, its shadow shifts further down-right, blurs, and becomes more transparent. The canonical rig lives in `templates/components/PaperCutout.tsx` — copy it verbatim, do not retune per scene:
 
-```tsx
-// src/shared/components/PaperCutout.tsx
-import React from "react";
-import { interpolate } from "remotion";
-
-interface PaperCutoutProps {
-  children: React.ReactNode;
-  elevation?: number; // 0 (flat on table) to 4 (high in air)
-  liftProgress?: number; // 0 (resting) to 1 (lifted)
-  whiteBorder?: boolean;
-  className?: string;
-  style?: React.CSSProperties;
-}
-
-export const PaperCutout: React.FC<PaperCutoutProps> = ({
-  children,
-  elevation = 1,
-  liftProgress = 0,
-  whiteBorder = true,
-  className = "",
-  style = {},
-}) => {
-  const currentElevation = elevation + liftProgress * 2;
-
-  // Dynamic shadow calculation based on elevation
-  const shadowX = interpolate(currentElevation, [0, 1, 2, 3, 4], [1, 3, 6, 12, 20]);
-  const shadowY = interpolate(currentElevation, [0, 1, 2, 3, 4], [2, 6, 14, 26, 40]);
-  const shadowBlur = interpolate(currentElevation, [0, 1, 2, 3, 4], [2, 6, 12, 22, 35]);
-  const shadowAlpha = interpolate(currentElevation, [0, 1, 2, 3, 4], [0.4, 0.35, 0.28, 0.2, 0.15]);
-
-  return (
-    <div
-      className={className}
-      style={{
-        display: "inline-block",
-        position: "relative",
-        filter: `drop-shadow(${shadowX}px ${shadowY}px ${shadowBlur}px rgba(35, 25, 20, ${shadowAlpha}))`,
-        ...style,
-      }}
-    >
-      <div
-        style={{
-          border: whiteBorder ? "3px solid #FAF8F5" : "none",
-          borderRadius: "8px",
-          overflow: "hidden",
-          backgroundColor: "#FAF8F5",
-        }}
-      >
-        {children}
-      </div>
-    </div>
-  );
-};
-```
+- **Direction is FIXED: bottom-right (+x, +y).** Light comes top-left (~315°). A shadow in any other direction breaks the illusion instantly.
+- **Color is FIXED: warm umber `rgba(35, 25, 20, α)`.** NEVER neutral gray / black-only — that reads digital, not paper.
+- **Elevation ladder (never skip, never eyeball):**
+  | Level | Use | Offset | Blur | Alpha |
+  | :--- | :--- | :--- | :--- | :--- |
+  | Z0 resting | prop lying on table, box base | +2, +3 | 3 | .42 (tight dark contact — grounds it) |
+  | Z1 flat underlay | back panels, floor strips | +5, +8 | 8 | .34 |
+  | Z2 floating | mid-air props, cards | +9, +18 | 16 | .26 |
+  | Z3 popping | tags, badges, hands near prop | +16, +32 | 30 | .18 |
+  | Z4 hero-high | giant foreground hand (frame-004) | +24, +50 | 46 | .12 (far faint halo) |
+- **Two classic fails:** shadow too dark + too sharp at high elevation (= sticker look); missing shadow entirely (= floating-in-void — §5.8 gate auto-FAILS the still).
+- Custom one-off shadows are banned — if the rig looks wrong at some elevation, the prop's elevation value is wrong, not the rig.
 
 ### 3. 3D Pop-Up Book Fold Hinge (`PopUpPaper`)
 Simulates a cutout folding up from a flat page around its bottom edge using CSS 3D:
@@ -478,17 +436,20 @@ export const PaperTextPill: React.FC<PaperTextPillProps> = ({ text }) => {
 
 A `PaperCutout` wrapper alone does NOT make papercraft. Flat digital UI inside a drop-shadow still looks digital. Every cutout must pass these material rules, or the still-preview gate (Step 6) FAILS.
 
+Reference for "does it read as paper?": `references/video/frames/frame-004.jpg` — the hand and table read tactile because of (a) dual-layer grain (fine fiber + large mottling blotches that survive H264), (b) layered fingers each with their own shadow, (c) tight-dark box shadow vs far-faint hand shadow. Hold every still against that frame.
+
 ### Banned (instant papercraft fail)
 - **Emoji anywhere on screen** — as characters/props (😊 ❄️ 💨 🛏️ ⛄) AND inside badges/titles/captions (🌡️ in "HUKUM FISIKA 🌡️", 🔥 in "KOMPOR GAS 🔥", ⏱️ in "TIMER ⏱️"). Emoji are glossy digital glyphs — they kill the paper illusion on sight. Build faces, weather, and objects from paper SVG/CSS shapes (circle head + paper-dot eyes + cut smile strip). Badge emphasis comes from paper sunburst/star cutouts, never emoji.
 - **Inset shadows / glassmorphism / clean CSS gradients** as surfaces (`box-shadow: inset ...`, `repeating-linear-gradient` wallpaper, glossy temp displays). Real paper has no inner glow. All surfaces = flat matte color + grain overlay. (The single exception: the diagonal window-light wash inside `PaperTabletop`, which simulates photographed light, not a digital surface.)
 - **Thin 2–5px clean borders** passed off as "die-cut". On a 1080×1920 canvas a real cardstock edge reads at **8–12px**, off-white `#FFFDF8`, with a slightly irregular radius (e.g. `18px 22px 20px 24px` — never four identical corners).
 - **Text-label boxes as props** (a rounded rectangle that just says "SELIMUT TEBAL" is a caption, not a blanket). Every prop needs a recognizable **silhouette first**, text second.
+- **Silhouette prop wrapped in a white box** — `Stone`/`Feather`/`Hand` polygon inside `PaperCutout whiteBorder={true}` renders a white rectangle behind the shape. whiteBorder is for rectangular cards/boards ONLY; silhouette props use `whiteBorder={false}` (transparent bg) so only shape + shadow + grain render.
 
 ### Mandatory layer stack (every cutout)
 1. **Base silhouette** — the shape that reads at a glance (AC body, blanket-covered sleeper, droplet).
-2. **1–2 detail layers** — vent slats, LED strip, quilt stitch lines, droplet shine — as separate stacked paper strips, NOT painted-on gradients.
-3. **Grain overlay** — built into `PaperCutout` by default (feTurbulence fiber at opacity 0.32, `mixBlendMode: multiply`) and available as `grainOverlay()` from `shared/styles/paperTheme.ts`. Never remove it. Tabletop-only grain is invisible after video compression.
-4. **Warm cast shadow** — `rgba(35, 25, 20, α)` via `PaperCutout` elevation. No neutral-gray or black-only shadows.
+2. **1–2 detail layers** — vent slats, LED strip, quilt stitch lines, droplet shine — as separate stacked paper strips, NOT painted-on gradients. Detail strips get their own thin shadows so they read as stacked, not printed.
+3. **Dual-layer grain overlay** — built into `PaperCutout` by default: `FIBER_BLOTCH` mottling at opacity 0.5 (large blotches that SURVIVE H264 — this is what reads as paper on phones) + feTurbulence fiber at opacity 0.32, both `mixBlendMode: multiply`. Never remove either. Tabletop-only grain is invisible after video compression — the cutout MUST carry its own texture.
+4. **Warm cast shadow from the §5 rig** — `rgba(35, 25, 20, α)`, bottom-right, elevation-laddered. See §5.2 for the exact ladder. No neutral-gray or black-only shadows. No shadow = floating-in-void fail.
 
 ### Art-direction tokens (mandatory imports)
 Never hand-pick hex codes per scene. Import the canonical palette from `shared/styles/paperTheme.ts`:
@@ -540,6 +501,8 @@ The #1 gap vs the reference video (`<SKILL_DIR>/references/video/`): reference f
 - Wrap every scene in `PaperTabletop` (default tone `kraft`). A frame that is >40% flat empty background is a fail.
 - The table is never a plain solid: it carries the window-light wash + fiber grain (built into the component) AND one scenic treatment per beat: printed map/contour backdrop, painted sky wash, tiled floor strips, or a shallow diorama base (backdrop wall + floor fold).
 - Props occupy the middle 60% of the frame; "one small prop centered in an empty field" is a fail — scale the hero prop up or add table dressing (scattered paper bits, ribbon trails, side props).
+- **Vertical zone map (1080×1920, mandatory):** horizon/floor fold at y 1150–1350 (60–70%). Top lane (y 0–250) = entry lane for the giant hand — keep clear of badges. Hero action at y 700–1200. SignBoard center ~y 950. Caption bottom ~y 1650. The #1 failure mode is "all props in top 40%, bottom 50% empty kraft + caption" — push the horizon DOWN and the props UP to meet it; on phone screens anything above y 500 reads thumbnail-sized.
+- **The frame-004 depth stack (copy this layering for 2.5D):** (1) back wall with line-art (buildings/clouds/maps, ink at 30–40% opacity — sets scale, costs nothing), (2) thick mid box/diorama with visible SIDE faces + layered stickers, (3) hero object ON the box, (4) GIANT foreground hand (`PaperHand variant="place"`, s 1.6–2.2, zIndex 60) whose fingers overlap the hero object while the cuff bleeds off the top edge. Foreground-overlap is what sells 2.5D — a hand beside the prop is decoration, a hand ON TOP of the prop is depth.
 
 ### Rule 2 — Titles live IN the set, not in floating badges
 - Beat titles are 3D set pieces: a folded paper box labeled "PAJAK", a standing signboard, letters pinned on the backdrop wall — NEVER a floating rounded badge hovering over empty space.
@@ -550,8 +513,10 @@ The #1 gap vs the reference video (`<SKILL_DIR>/references/video/`): reference f
 - A thermometer, rice cooker, or pan must be instantly recognizable by outline at thumbnail size. If the prop reads as "rounded rectangle with text", redesign the silhouette (bulb + tube + tick strip for a thermometer; body + lid knob + side handles for a pot).
 - The hero prop per scene fills **≥35% of frame height**. Thumbnail-sized props centered in a void are a fail.
 
-### Rule 4 — Hands & scale cues (one per video minimum)
-- References repeatedly use a paper cutout hand to place/point at props (pinning a bill, pointing at a map). Include at least one paper-hand interaction in every video — it instantly sells scale and tactility.
+### Rule 4 — Hands & scale cues (one GIANT hand per video minimum)
+- References repeatedly use a paper cutout hand to place/point at props (pinning a bill, pointing at a map). Include at least one paper-hand interaction in every video — it instantly sells scale and tactility. Use the canonical `templates/components/PaperHand.tsx` (`variant="place"` = giant arm from off-frame, fingers ON the prop; `variant="point"` = small floating pointer). NEVER hand-roll fingers from divs — the failure mode is cropped finger stubs at the frame edge that read as floating gloves.
+- **Giant, overlapping, cuffed — all three or it fails.** s 1.6–2.2 so the hand dwarfs the prop; fingers land ON TOP of the hero object (zIndex 60, overlap ≥60px); forearm runs OFF the frame edge with a thick cuff (accent/kraft, ≥90px at s=1) — a wrist stub ending mid-air reads severed. Thumb goes BEHIND the prop so the pinch reads THROUGH it.
+- Keep the hand's landing lane clear: no title badge, tag, or caption where fingers touch. If a tag must annotate the held object, pin it to the BOX below, not beside the fingers.
 - Cheap scale cues when no hand: scattered coins, paper clips, string, tape corners, ruler strips.
 
 ---
@@ -675,12 +640,13 @@ npx remotion render <CompositionId> out/<slug>/<slug>.mp4
 
 ## 7. Caption Rules (Strict — Do Not Deviate)
 
-Captions are the **single most visible** element. Bad captions kill the vibe. Follow these rules absolutely:
+Captions are the **single most visible** element. Bad captions kill the vibe. Follow these rules absolutely. The canonical component is `templates/components/BeatCaption.tsx` (phrase-aware chunking + tight beat guard) — copy it into the project, do not reimplement with a fixed word-count CHUNK:
 
 ### 7a. Length Rule
-- **Maximum 4–5 words per caption card. This is ENFORCED by the §5.8 gate** — a still showing an 8+ word caption (e.g. "Selama ada air, suhu panci GAK BISA lewat dari 100°C!") FAILS the text-layer check. Split first, then render.
-- If a script line is long (e.g., "AC bekerja dengan cara memindahkan panas dari dalam ruangan ke luar ruangan"), **split it into multiple sequential caption cards**, each showing 4–5 words timed to the voice-over.
-- Never display a full sentence at once.
+- **Maximum 8 words / 2 lines per caption card at 38px on a 1080px canvas. This is ENFORCED by the §5.8 gate** — a still showing a 3-line caption or a card overflowing its pill FAILS the text-layer check. Prefer a FULL short sentence in ONE card over chopping it ("batunya jedag duluan!" beats "batunya jedag" + "duluan!").
+- If a script line is long (>8 words), **split at sentence boundary first, comma/conjunction second — NEVER mid-phrase.** Fixed-N-word chunking produces hanging fragments ("yang berat" / "satu" / "kena" dangling alone) — that failure is banned. Never leave a trailing stub <3 words: merge it back into the previous card if it fits maxWords + 2.
+- Never display a full paragraph at once. Card switching is time-proportional: each card holds screen time proportional to its word count.
+- **One caption at a time, always.** Beat guard is `[start, end + 2f]` — the old `end + 15` overlap showed two beats' captions fighting on one screen. Boards are diegetic labels ("ruang hampa", "1971"), captions are narration — never two sentence-texts competing on one frame.
 
 ### 7b. Word-by-Word Highlight Animation
 Every caption must implement **active word highlight** — the word currently being spoken is highlighted differently from inactive words:
@@ -739,6 +705,6 @@ const activeWordIndex = Math.min(
 5. **Always cast grounded shadows.** Every elevated cutout must have a shadow that shifts, blurs, and fades as elevation increases.
 6. **Never create a new Remotion project from scratch.** Always add to `src/videos/<slug>/` and register in `src/Root.tsx`.
 7. **Always sync spring dynamics to emotion tags.** The motion physics is the acting — treat it seriously.
-8. **Captions: 4–5 words max, with word-highlight active animation.** Never dump a full sentence.
+8. **Captions: full short sentence per card (≤8 words / 2 lines), split at phrase boundaries, one card on screen.** Never fixed-N-word chop, never two captions at once (§7a).
 9. **Render per-scene stills before full render.** Catch papercraft style failures early, not at the end.
 10. **Fill the table, cap text at two layers, score every still.** Full-bleed `PaperTabletop` in every scene, titles live in the set (§5.7), §5.8 gate before render.

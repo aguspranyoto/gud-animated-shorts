@@ -56,6 +56,18 @@ export const FIBER_GRAIN =
   `opacity='0.6'/%3E%3C/svg%3E")`;
 
 /**
+ * Large-scale paper mottling (low-frequency blotches).
+ * Fine FIBER_GRAIN alone crushes in H264 — blotches survive compression
+ * and are what reads as "paper" on phone screens (cf. frame-004 hand/table).
+ * Always paired with FIBER_GRAIN, never alone.
+ */
+export const FIBER_BLOTCH =
+  `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='520' height='520'` +
+  `%3E%3Cfilter id='b'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.035' numOctaves='3' ` +
+  `stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23b)' ` +
+  `opacity='0.55'/%3E%3C/svg%3E")`;
+
+/**
  * Grain overlay style for cutouts (§5.5: grain opacity ≥ 0.25 ON the cutout,
  * not only on the tabletop — tabletop-only grain is invisible after compression).
  * Render as an absolutely-positioned div on top of the cutout content:

@@ -1,5 +1,6 @@
 import React from "react";
-import { interpolate } from "remotion";
+import { FIBER_BLOTCH, FIBER_GRAIN } from "../styles/paperTheme";
+import { shadowForElevation } from "./shadowRig";
 
 export interface PaperCutoutProps {
   children: React.ReactNode;
@@ -20,20 +21,34 @@ export const PaperCutout: React.FC<PaperCutoutProps> = ({
   className = "",
   style = {},
 }) => {
+  // Shadow rig — THE depth cue (frame-004). Formula, never eyeball:
+  // light comes top-left (~315°), shadow falls bottom-RIGHT (+x, +y),
+  // warm umber rgba(35,25,20,α) — NEVER neutral gray / black-only.
+  // As elevation rises: shadow shifts FURTHER, gets SOFTER, goes LIGHTER.
+  //   Z0 resting  → tight dark contact (α .38, blur 2) — grounds the prop
+  //   Z2 floating  → lifted soft (α .26, blur 12)
+  //   Z4 hero-high → far faint halo (α .14, blur 38) — giant hand territory
+  // A shadow that's too dark + too sharp at high elevation = sticker look.
+  // A missing shadow = floating-in-void fail (§5.8 gate auto-FAILS).
+  // Single source of truth: shadowRig.ts (pure, node-testable).
+  // This component only formats the CSS — the ladder lives there.
   const currentElevation = elevation + liftProgress * 2.5;
+  const sh = shadowForElevation(currentElevation);
+  const shadowCss = `drop-shadow(${sh.x}px ${sh.y}px ${sh.blur}px rgba(35, 25, 20, ${sh.alpha}))`;
 
-  const shadowX = interpolate(currentElevation, [0, 1, 2, 3, 4], [1, 3, 7, 14, 22]);
-  const shadowY = interpolate(currentElevation, [0, 1, 2, 3, 4], [2, 6, 15, 28, 44]);
-  const shadowBlur = interpolate(currentElevation, [0, 1, 2, 3, 4], [2, 6, 12, 24, 38]);
-  const shadowAlpha = interpolate(currentElevation, [0, 1, 2, 3, 4], [0.38, 0.32, 0.26, 0.2, 0.14]);
-
+  // whiteBorder guide: silhouette props (stone, feather, hand, astronaut)
+  // MUST use whiteBorder={false} — a rectangular white box behind a
+  // clipPath polygon destroys the silhouette. whiteBorder={true} (8-12px
+  // cardstock edge) is only for rectangular cards/boards. §5.5.
+  // Grain layers below are ALWAYS on: tabletop-only grain is invisible
+  // after video compression, the cutout MUST carry its own texture.
   return (
     <div
       className={className}
       style={{
         display: "inline-block",
         position: "relative",
-        filter: `drop-shadow(${shadowX}px ${shadowY}px ${shadowBlur}px rgba(35, 25, 20, ${shadowAlpha}))`,
+        filter: shadowCss,
         transform: `translateY(${-liftProgress * 15}px) scale(${1 + liftProgress * 0.03})`,
         transition: "filter 0.05s ease-out",
         ...style,
@@ -43,21 +58,29 @@ export const PaperCutout: React.FC<PaperCutoutProps> = ({
         style={{
           position: "relative",
           border: whiteBorder ? `${borderWidth}px solid #FFFDF8` : "none",
-          borderRadius: "18px 22px 20px 24px",
+          borderRadius: whiteBorder ? "18px 22px 20px 24px" : 0,
           overflow: "hidden",
-          backgroundColor: "#FFFDF8",
+          backgroundColor: whiteBorder ? "#FFFDF8" : "transparent",
         }}
       >
         {children}
+        {/* Dual-layer paper texture: blotch survives H264 where fine
+            grain alone crushes (cf. frame-004 hand/table). */}
         <div
           style={{
             position: "absolute",
             inset: 0,
-            backgroundImage:
-              "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'" +
-              "%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' " +
-              "stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' " +
-              "opacity='0.6'/%3E%3C/svg%3E\")",
+            backgroundImage: FIBER_BLOTCH,
+            opacity: 0.5,
+            mixBlendMode: "multiply",
+            pointerEvents: "none",
+          }}
+        />
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            backgroundImage: FIBER_GRAIN,
             opacity: 0.32,
             mixBlendMode: "multiply",
             pointerEvents: "none",
