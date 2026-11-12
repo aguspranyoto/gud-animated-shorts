@@ -1,4 +1,4 @@
-// Colour grade for the bridge short (post agent): references/grade/GradeEffect.ts (reports/grade.md) verbatim,
+// Display-referred colour grade (post): references/grade/GradeEffect.ts (reports/grade.md) verbatim,
 // plus GRADES / GRADE_STRENGTH / gradeFor() so the lead can re-fit the presets after the lighting merge.
 // The presets were fitted to the OLD unlit stills: after the WORLD lighting lands they will over-correct; re-fit
 // (grade.md 5.C) or lower GRADE_STRENGTH. Each Inner (crossfade layer) grades with its own shot's light, so the DOM
@@ -167,7 +167,7 @@ export const GRADE_GOLDEN2: GradeParams = {
   vig: [0.2, 0.4],
 };
 export const GRADES: Record<"day" | "golden", GradeParams> = { day: GRADE_DAY2, golden: GRADE_GOLDEN2 };
-/** One strength (0..1, the effect's `amount`) per preset, set against the NEW world (bridge_world, 2026-10-31): full-strength
+/** One strength (0..1, the effect's `amount`) per preset, tuned per scene against that scene's world: full-strength
  *  presets overshot (day median Y' .59-.67 vs target .571, golden .58 vs .52); day 0.65 / golden 0.45 land at
  *  .54-.62 / ~.52. Re-fit the presets (grade.md 5.C) after the merge and raise these again. */
 export const GRADE_STRENGTH: Record<"day" | "golden", number> = { day: 1, golden: 1 };

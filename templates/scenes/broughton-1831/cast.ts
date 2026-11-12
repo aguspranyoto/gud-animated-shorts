@@ -12,9 +12,9 @@ import {
   FPS, D0, FILES, ROW_GAP, COUNT, PARK, SHOTS, SNAP, DROP0, DROP1, DROP_H, V3, front, marchPhase, stomp, deckY, dropW, dropU, shapeZ,
   smooth, clamp01, BridgeState,
 } from "./story";
-import { LIGHTS } from "./lights";
-import { NOINK } from "./ink";
-import { cardShade, blobMaterial, CARD_K } from "./cardshade";
+import { LIGHTS } from "../../engine/lights";
+import { NOINK } from "../../engine/ink";
+import { cardShade, blobMaterial, CARD_K } from "../../engine/cardshade";
 
 // ---------------- canvas pool ----------------
 type Entry = { cv: HTMLCanvasElement; tex: THREE.CanvasTexture; w: number; h: number };

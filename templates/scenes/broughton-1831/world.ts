@@ -7,9 +7,9 @@ import { staticFile } from "remotion";
 import { Batch, Strand, boxGeo, V, lam, buildTown, flagTex, Kit, Ray, kitClone } from "./build";
 import { beam, bed, rep, ctex, planksHD, beamHD, stoneHD, cobbleHD, grassHD, chainHD, waterNear, waterFar, cloudHD } from "./paint";
 import { Pen, fxSign } from "./toon";
-import { LIGHTS, LOOK, LightPreset } from "./lights";
-import { TONE, CHAR, LFB, twoTone, untone } from "./shade";
-import { NOINK } from "./ink";
+import { LIGHTS, LOOK, LightPreset } from "../../engine/lights";
+import { TONE, CHAR, LFB, twoTone, untone } from "../../engine/shade";
+import { NOINK } from "../../engine/ink";
 import { Pool, Actor, Fx, stage, snapFx, splashFx, creakFx, SIGN_AT, SU_SWING } from "./cast";
 import { FPS, D0, SHOTS, PARK, ANCHOR, SNAP, camAt, bridgeState, deckY, dropW, shapeZ, snapEnd, front, BridgeState, V3, smooth, FOREGROUND, ShotDef } from "./story";
 
@@ -21,7 +21,7 @@ let kitP: Promise<Kit> | null = null;
 export const loadKit = () => {
   if (!kitP) {
     const loader = new GLTFLoader();
-    kitP = Promise.all(KENNEY.map((n) => loader.loadAsync(staticFile(`bridge/kenney/${n}.glb`)).then((g) => [n, g.scene] as const).catch(() => [n, null] as const)))
+    kitP = Promise.all(KENNEY.map((n) => loader.loadAsync(staticFile(`scenes/broughton-1831/kenney/${n}.glb`)).then((g) => [n, g.scene] as const).catch(() => [n, null] as const)))
       .then((list) => Object.fromEntries(list.filter((e) => e[1]).map(([n, s]) => [n, s!])) as Kit);
   }
   return kitP;

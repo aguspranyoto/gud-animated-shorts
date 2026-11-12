@@ -14,13 +14,13 @@ import { useThree } from "@react-three/fiber";
 import { EffectComposer } from "@react-three/postprocessing";
 import { BlendFunction, BloomEffect, ToneMappingEffect, ToneMappingMode } from "postprocessing";
 import { World, loadKit } from "./world";
-import { InkPass, noInkFallback } from "./ink";
-import { LensBlur, GrainEffect } from "./lensblur";
-import { GradeEffect, GRADES, GRADE_STRENGTH, gradeFor } from "./grade";
+import { InkPass, noInkFallback } from "../../engine/ink";
+import { LensBlur, GrainEffect } from "../../engine/lensblur";
+import { GradeEffect, GRADES, GRADE_STRENGTH, gradeFor } from "../../engine/grade";
 import { Kit } from "./build";
 import { TOTAL, FLASH_AT, SHOTS, layersAt, dofAt } from "./story";
 
-export const BRIDGE_FRAMES = TOTAL;
+export const BROUGHTON_FRAMES = TOTAL;
 
 /** A/B switches for test stills only (Remotion inputProps `{ post: { ink: false, ... } }`); everything is on by default. */
 type PostToggles = { ink: boolean; lens: boolean; pre: boolean; bloom: boolean; grade: boolean; grain: boolean };
@@ -41,7 +41,7 @@ const fwd = new THREE.Vector3(), fpt = new THREE.Vector3();
 
 const useKit = () => {
   const [kit, setKit] = useState<Kit | null>(null);
-  const [handle] = useState(() => delayRender("bridge kit"));
+  const [handle] = useState(() => delayRender("broughton kit"));
   useEffect(() => { loadKit().then((k) => { setKit(k); continueRender(handle); }); }, [handle]);
   return kit;
 };
@@ -102,7 +102,7 @@ const ShotView: React.FC<{ id: number; kit: Kit; alpha: number }> = ({ id, kit, 
   </AbsoluteFill>
 );
 
-export const BridgeShort: React.FC = () => {
+export const BroughtonShort: React.FC = () => {
   const f = useCurrentFrame();
   const kit = useKit();
   if (!kit) return null;
