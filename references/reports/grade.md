@@ -290,7 +290,7 @@ Stability: a first run with neutral-only tint targets reproduced the same day pr
 
 ## 5. Implementation recipe (our stack)
 
-**A. New file `src/videos/bridge/grade.ts`.**
+**A. New file `src/videos/broughton-1831/grade.ts`.**
 
 - Copy `references/grade/GradeEffect.ts` verbatim. It needs postprocessing 6.37.2 and three 0.175.
 - It contains the GLSL `mainImage` with the uniforms `gradeKy[7]`, `gradeKm[7]`, `gradeSat`, `gradeTintS/M/H`, `gradeVig` and `gradeAmount`. It also has the `GradeEffect` class with `set(p, q?, t)` for blending presets and an `amount` dial, plus the `GRADE_DAY` / `GRADE_GOLDEN` constants from the table above.
@@ -313,7 +313,7 @@ void mainImage(const in vec4 inputColor, const in vec2 uv, out vec4 outputColor)
 }
 ```
 
-**B. `Bridge.tsx`, inside `Inner`.** Put the grade last, after `fx.tone`, and choose the preset from the shot's `light`:
+**B. `Broughton.tsx`, inside `Inner`.** Put the grade last, after `fx.tone`, and choose the preset from the shot's `light`:
 
 ```tsx
 import { GradeEffect, GRADE_DAY, GRADE_GOLDEN } from "./grade";

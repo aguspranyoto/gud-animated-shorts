@@ -351,7 +351,7 @@ include the Neutral tone map:
 - **Golden backlight.** az 15 / el 9 puts the sun just outside the right frame edge for every golden camera. Its halo enters the frame, and 2 m cards cast ~13 m shadows toward the camera, as in s01-s04.
 - **Head tints.** `charTint` values are the measured light colours for WHITE heads, which is what the reference uses. If our heads keep the peach skin #f7d6b6, use golden `[1.0, 0.88, 0.76]` and day `[1.0, 0.97, 0.96]` so head saturation stays ≤ .37 instead of .46.
 
-### 9.2 New file `src/videos/bridge/shade.ts`: two-tone world shading + card shading
+### 9.2 New file `src/videos/broughton-1831/shade.ts`: two-tone world shading + card shading
 
 ```ts
 // Stylised two-tone lighting shared by all world materials and the character cards (three r175 chunk names).

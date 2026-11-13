@@ -370,7 +370,7 @@ const hammerK = (t: number) => {
 - march poses on ones;
 - whistle notes.
 
-### 5.4 `Bridge.tsx`: whip blur (optional, at most one whip)
+### 5.4 `Broughton.tsx`: whip blur (optional, at most one whip)
 
 Only add a whip if it gets blur. The reference whips are 45-93 px/f over 7-25 f with a 2-3 f ramp, always smeared. Set `vel`
 each frame to the camera's screen motion between `f` and `f+1` (in UV units) × 0.5 shutter, and 0 otherwise:

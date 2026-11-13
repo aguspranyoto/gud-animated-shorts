@@ -284,7 +284,7 @@ Other reference framing numbers:
 
 ## 6. Recipe (our stack: three 0.175, postprocessing 6.37.2, @react-three/postprocessing 3.0.4)
 
-### 6.1 New file `src/videos/bridge/lensblur.ts`: thin-lens DOF, single gather pass
+### 6.1 New file `src/videos/broughton-1831/lensblur.ts`: thin-lens DOF, single gather pass
 - `@react-three/postprocessing` 3.0.4 puts any `CONVOLUTION` effect into its own `EffectPass` automatically, so `<primitive object={fx.lens} />` can replace `fx.dof` in place (after ink, before bloom).
 - `getViewZ`, `readDepth`, `texelSize` and `inputBuffer` are provided by `EffectPass`, as `ink.ts` already relies on.
 
@@ -372,7 +372,7 @@ export class LensBlurEffect extends Effect {
 **Fallback if you only want a quick test with the built-in effect:**
 `new DepthOfFieldEffect(camera, { resolutionScale: 1 })`, `worldFocusRange = 2 * focus`, `bokehScale = cInf`. This approximates the far side of the thin lens but under-blurs foreground objects. Expect grain and dark rims above 8 px.
 
-### 6.2 `Bridge.tsx` (replaces the `dof` lines)
+### 6.2 `Broughton.tsx` (replaces the `dof` lines)
 
 ```ts
 import { LensBlurEffect } from "./lensblur";

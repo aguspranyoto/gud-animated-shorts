@@ -27,7 +27,7 @@ specific characters, props or shots.
 
 ## Our stack (so recommendations are implementable)
 - `your Remotion project` Remotion 4.0.290 + three 0.175 + @react-three/fiber 9.1.2 + @react-three/postprocessing 3.0.4 +
-  postprocessing 6.37.2, composition `BridgeShort` 1080x1920 30 fps. Source in `src/videos/bridge/` of your Remotion project:
+  postprocessing 6.37.2, composition `BroughtonShort` 1080x1920 30 fps. Source in `src/videos/broughton-1831/` of your Remotion project:
   - `story.ts` timeline, cameras (CAMS), lights (LIGHTS day/golden: sun dir/colour/intensity, hemisphere, fill, sky colours).
   - `world.ts` World: gradient sky sphere, HemisphereLight + DirectionalLight sun (4096 shadow map) + fill, Fog(90,560),
     sprite clouds, water mesh, procedural bridge, per-frame posing; `build.ts` town (boxy gabled houses with canvas
@@ -39,7 +39,7 @@ specific characters, props or shots.
   - `cast.ts` sprite pool; each character = camera-facing billboard plane, MeshLambertMaterial with the drawing as
     map + emissiveMap (emissive about 0.36, so it looks pasted-on), alphaTest 0.5; casts shadows via a depth material.
   - `ink.ts` current outline: screen-space Laplacian of 1/viewZ only (no normals), threshold 0.06 -> almost no lines.
-  - `Bridge.tsx` EffectComposer chain: Ink -> DepthOfField -> Bloom(0.3, threshold 0.86) -> ToneMapping NEUTRAL, MSAA 4.
+  - `Broughton.tsx` EffectComposer chain: Ink -> DepthOfField -> Bloom(0.3, threshold 0.86) -> ToneMapping NEUTRAL, MSAA 4.
 - Tools on this machine: python (numpy 2.4, PIL 12, scipy 1.18; no OpenCV), ffmpeg/ffprobe. Do not pip-install anything,
   do not download code or tools from the internet.
 

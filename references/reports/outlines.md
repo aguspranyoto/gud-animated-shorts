@@ -88,7 +88,7 @@ Our stroke density looks similar only because of the character outlines and the 
   detect edges with a scale-normalised depth test and a normal-angle test, set the width with the sampling
   radius, anti-alias, and composite before the DOF. Painted texture lines stay in `paint.ts`.
 
-## 4. Why ours shows almost none (old `ink.ts` + `Bridge.tsx`)
+## 4. Why ours shows almost none (old `ink.ts` + `Broughton.tsx`)
 
 1. **DOF erases it.** R3F's `<EffectComposer>` merges consecutive Effects into one EffectPass, so Ink, DOF, Bloom
    and Tone run in one shader. The DOF output is `inputColor*(1-cocFar) + colorFar`, where `colorFar` is blurred
@@ -105,7 +105,7 @@ Our stroke density looks similar only because of the character outlines and the 
 
 ## 5. Recipe for our stack (postprocessing 6.37.2, three 0.175, R3F postprocessing 3.0.4)
 
-### 5.1 Replace `src/videos/bridge/ink.ts` with `recipe/ink.ts`
+### 5.1 Replace `src/videos/broughton-1831/ink.ts` with `recipe/ink.ts`
 
 The file is complete and type-checked (tsc against reel-kit's three and postprocessing types). It has been run in
 WebGL with this exact stack: MSAA 4, HalfFloat buffers, DOF, Bloom, Neutral tone mapping, with 0 GL errors. Full
@@ -143,7 +143,7 @@ Design:
   (silhouettes, 1080p) and **2.3 → 0.9 px** for creases. The reference is 3.4 → 2.8 → 2.2 px for silhouettes and
   depth jumps, and 2.2 px for creases.
 
-### 5.2 `Bridge.tsx` (`Inner`), the only wiring change
+### 5.2 `Broughton.tsx` (`Inner`), the only wiring change
 
 ```tsx
 import { InkPass } from "./ink";                     // was: import { InkEffect } from "./ink";
@@ -262,11 +262,11 @@ core luma ~60-70), soft, and they scale with perspective.
 5. **Painted texture lines in `paint.ts`** (section 5.5): plank seams, mortar, roof rows and window frames as soft
    dark tints, never duplicating geometry edges.
 
-## Appendix: full `recipe/ink.ts` (drop-in replacement for `src/videos/bridge/ink.ts`)
+## Appendix: full `recipe/ink.ts` (drop-in replacement for `src/videos/broughton-1831/ink.ts`)
 
 ```ts
 // Ink outlines for the 3D world, matched to the reference measurements (reports/outlines.md).
-// Drop-in replacement for src/videos/bridge/ink.ts (postprocessing 6.37.2 + three 0.175).
+// Drop-in replacement for src/videos/broughton-1831/ink.ts (postprocessing 6.37.2 + three 0.175).
 //
 // How it works
 //  1. Re-render the WORLD ONLY (camera layer 0) into a non-MSAA target: view-space normal (rgb), coverage (a) and

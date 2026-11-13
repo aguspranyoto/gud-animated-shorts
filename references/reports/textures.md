@@ -292,7 +292,7 @@ If the house count makes facades too heavy, use 72 px/m. That still halves the c
 
 All painters are in `proto/paint_recipe.ts` and listed in full in the appendix. They use `ctex(key, w, h, (g, r) => ...)`
 and `rng` exactly as `paint.ts` does, and need no images. `tsc --strict` passes. To install them, paste the helpers
-(`U`, `wrapX`, `wrap2`, `rr`, `blotch`, `grain`, `nail`) and the painters into `src/videos/bridge/paint.ts`. Change the
+(`U`, `wrapX`, `wrap2`, `rr`, `blotch`, `grain`, `nail`) and the painters into `src/videos/broughton-1831/paint.ts`. Change the
 import to the local `ctex` / `rng`. All painters tile seamlessly in x, and scattered marks also wrap in y.
 
 ### 5.1 Parameters at a glance
@@ -490,7 +490,7 @@ Next, in order:
 ## Appendix: `proto/paint_recipe.ts` (type-checked with `tsc --strict`; in reel-kit import `ctex` / `rng` from `./paint`)
 
 ```ts
-// Texture recipe for the bridge short: Canvas2D painters in the style of reel-kit/src/videos/bridge/paint.ts
+// Texture recipe for the bridge short: Canvas2D painters in the style of reel-kit/src/videos/broughton-1831/paint.ts
 // (ctex + rng, no external images). Prototype copy for checking only; in reel-kit they go into paint.ts next to
 // the old painters (import line becomes `from "./paint"` / local). Numbers in comments are the reference
 // measurements each value is tuned to (reports/textures.md). All sizes assume the uv scales noted per function.
