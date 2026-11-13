@@ -31,6 +31,19 @@ export const CAPTION_TOP_PCT = 64; // centre of the line sits ~64 % down the fra
 export const CAPTION_FONT_PX = 80;
 export const CAPTION_STROKE_PX = 5;
 
+/** black outline that also renders in headless Chromium: -webkit-text-stroke
+ *  paints over the fill there (and paint-order is SVG-only), so the outline is
+ *  built from 8-direction text-shadows instead. Same look in every browser. */
+const outlineShadows = (px: number, color = "#000000") => {
+  const d = Math.round(px / 2.5);
+  const o = [
+    [-1, 0], [1, 0], [0, -1], [0, 1],
+    [-0.7, -0.7], [0.7, -0.7], [-0.7, 0.7], [0.7, 0.7],
+  ];
+  return o.map(([x, y]) => `${Math.round(x * px)}px ${Math.round(y * px)}px 0 ${color}`).join(", ")
+    + `, 0 0 ${d}px ${color}`;
+};
+
 export const CaptionOverlay: React.FC<{ words: Word[]; fps?: number; maxWords?: number }> = ({
   words, fps = 30, maxWords = 2,
 }) => {
@@ -53,8 +66,7 @@ export const CaptionOverlay: React.FC<{ words: Word[]; fps?: number; maxWords?: 
           fontSize: CAPTION_FONT_PX,
           lineHeight: 1.1,
           color: "#ffffff",
-          WebkitTextStroke: `${CAPTION_STROKE_PX}px #000000`,
-          paintOrder: "stroke fill",
+          textShadow: outlineShadows(CAPTION_STROKE_PX),
         }}
       >
         {c.text}
