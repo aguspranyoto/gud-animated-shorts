@@ -237,10 +237,12 @@ def parse_script(path):
     return title, lines
 
 
-def generate(text, profile_id, tag, out_path):
+def generate(text, profile_id, tag, out_path, ref_text=None):
     fields = {"text": text, "language": LANGUAGE, "profile_id": profile_id}
     if tag in INSTRUCT_OK:
         fields["instruct"] = INSTRUCT_OK[tag]
+    if ref_text:  # sidecar needs the matching reference transcript,
+        fields["ref_text"] = ref_text  # else it demands an STT model
     boundary = "----voicestudio-boundary"
     body = b""
     for k, v in fields.items():
@@ -292,12 +294,13 @@ def main():
     print("casting:")
     for n in notes:
         print("  " + n)
+    ref_map = {p["id"]: p.get("ref_text") or "" for p in api_get("/profiles")}
     wavs = []
     for i, (sp, _gender, _age, tag, text) in enumerate(lines, 1):
         pid, _name = mapping[sp]
         out = os.path.join(vdir, f"line_{i:02d}_sp{sp}.wav")
         print(f"[{i}/{len(lines)}] sp{sp} ({tag}) {text[:60]}...", flush=True)
-        generate(text, pid, tag, out)
+        generate(text, pid, tag, out, ref_map.get(pid))
         wavs.append(out)
     lst = os.path.join(vdir, "concat.txt")
     with open(lst, "w", encoding="utf-8") as f:
