@@ -1,6 +1,6 @@
 ---
 name: gud-animated-shorts
-description: Make a 45-60 s vertical cartoon educational short in Bahasa Indonesia in the "2D characters in a colourful 3D world" style (flat bean-head cartoon cards with ink outlines, painted 3D town/world with black ink lines, saturated sky, depth-of-field backgrounds, gliding cameras, AI TTS voice with emotion tags, synthesized SFX + music), rendered with three.js inside Remotion. Storytelling follows references/VIDEO_FORMAT.md (escalating from everyday phenomenon to complex science/tech). Use when the user asks for an educational animation short, "like the bridge video" look, "in that cartoon 3D style", or says "use the cartoon short skill".
+description: Make a 45-60 s vertical cartoon educational short in Bahasa Indonesia in the "2D characters in a colourful 3D world" style (flat bean-head cartoon cards with ink outlines, painted 3D town/world with black ink lines, saturated sky, depth-of-field backgrounds, gliding cameras, synthesized SFX + music), rendered with three.js inside Remotion. Voice is ALWAYS VoiceStudio voice cloning (saved voice profile, generated per line, one WAV per script line, then concatenated). Captions are ALWAYS on (max 2 words per chunk, timed to words.json). Storytelling follows references/VIDEO_FORMAT.md (escalating from everyday phenomenon to complex science/tech). Use when the user asks for an educational animation short, "like the bridge video" look, "in that cartoon 3D style", or says "use the cartoon short skill".
 ---
 
 # Cartoon 3D educational short (three.js + Remotion, Bahasa Indonesia)
@@ -17,11 +17,13 @@ The style reference is a channel studied privately (`references/`: STYLE_BIBLE.m
 - Never say the channel's name in a voice-over or description.
 
 User rules that apply:
-- No captions or labels in the video by default; add captions only when the user asks (see Captions).
+- Captions are ALWAYS on (see Captions). Never ship without them.
+- Voice is ALWAYS VoiceStudio voice cloning (saved voice profile, default `educator laki` unless the user names another). Never use another TTS.
+- Audio is ALWAYS generated per line: one VoiceStudio take per `script.txt` narration line, then concatenated to `voice.wav`. Never one giant single generation for the whole script.
+- Emotion tags (`[curious]`, `[excited]`, `[seriously]`, `[surprised]`, `[explaining]`, `[enthusiastic]`, `[amazed]`, `[energetic]`, `[playful]`, `[whispering]`) are performance directions in `script.txt` only. VoiceStudio does NOT read bracket tags, so strip them before generating and map each line's tag to that line's VoiceStudio `Style` field instead. Every narration line still carries one tag; never monotone.
 - Bahasa Indonesia kasual only (gaya Aku/Kamu). Never English narration.
-- Target market Indonesia. Tone ceria, lucu, energik — seperti cerita ke teman, bukan guru di kelas.
+- Target market Indonesia. Tone ceria, lucu, energik.
 - Durasi 45-60 detik. Platform YouTube Shorts, TikTok, Reels.
-- Voice: AI Text-to-Speech with emotion tags (`[curious]`, `[excited]`, `[seriously]`, `[surprised]`, `[explaining]`, `[enthusiastic]`, `[amazed]`, `[energetic]`, `[playful]`, `[whispering]`). Every narration block carries a tag; never monotone.
 - Jokes are researched real facts. Information accuracy checked; never sacrifice accuracy for sensation.
 - Standard mix: music +3 dB, SFX -6 dB, voice unchanged.
 - Final export 2K vertical: 1440x2560, `--scale 1.3333`.
@@ -42,9 +44,12 @@ User rules that apply:
    - Mandatory storytelling bridges: "Kalo kamu...", "Nah, ini namanya...", "Tapi tunggu dulu!", "Terus, gimana caranya?". Never jump straight to the main topic; let the viewer discover it gradually.
    - Every narration block gets one emotion tag. Output standard: `script.txt` contains only title + narration + emotion tags (no timestamps, visual directions, scene descriptions, or editing notes — that file is TTS-only).
    - Never describe on screen what the viewer already sees.
-3. **Voice.** Generate AI TTS `voice.wav` from `script.txt` (emotion tags are expression directions; actual effect depends on the TTS model), then make its word timings `words.json` (any speech-to-text with word times).
-   - Put them in the project folder, e.g. `~/bridge-short/voice/`.
-   - Hand-fix the word timings. Everything is timed to words.json.
+3. **Voice (ALWAYS VoiceStudio, per line).** Strip the `[tags]` from `script.txt` (they are directions only — VoiceStudio would read them as literal words), then generate ONE take per narration line with the saved voice profile (default `educator laki`):
+   - VoiceStudio Clone page (or API `POST /generate` on the local backend `http://127.0.0.1:3900` with `profile_id`): text = one stripped line, language Indonesian, `Style` = that line's emotion tag without brackets (e.g. `[excited]` → Style `excited`).
+   - Keep the reference clip ≤20 s with a matching transcript, or the sidecar fails with `REFERENCE_STT_MISSING` (see troubleshooting: short 3-10 s reference is ideal).
+   - Concatenate the per-line WAVs in script order to `voice.wav` (5-10 ms crossfade or silence gap between lines).
+   - Then make per-line word timings with any speech-to-text with word times and offset each line's times by its start in the concat → `words.json` (`[{ w, s, e }]`). Hand-fix the timings. Everything (shots, SFX, captions) is timed to words.json.
+   - Put them in the project folder, e.g. `~/bridge-short/voice/` (`line_01.wav`, `line_02.wav`, ... + `voice.wav` + `words.json`).
 4. **Shot plan** in `story.ts`: copy `templates/scenes/broughton-1831/` (the finished example scene) to `src/videos/<name>/`, import the engine from `templates/engine/`, register a new composition in `src/Root.tsx`, and rename scene constants to your story. Generic camera grammar lives in `templates/engine/camera.ts`; the scene's story.ts holds only your SHOTS/CAMS/DOF/story-physics tables.
    - `SHOTS`: id, a/b frames, light day/golden/night, crowd mode, `tau` story time.
    - `XFADE`: crossfades at place/time changes.
@@ -82,7 +87,7 @@ User rules that apply:
     - Fix anything it finds, then run a deep Opus audit.
 11. **Deliver.** SendUserFile the final mp4, update memory, write notes.
 
-## Captions (opt-in only; default is no captions)
+## Captions (ALWAYS on; every short ships with them)
 Reference style (`references/frames/*.jpg`, measured in STYLE_BIBLE.md): one chunk of
 max 2 words, a single line, white bold sans with a black outline, centred
 lower-middle (~64 % of frame height), hard swaps on each chunk. Gaps between chunks

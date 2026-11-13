@@ -1,7 +1,7 @@
 // Caption overlay in the reference-channel style (see references/frames/*.jpg):
 // one chunk of max 2 words, a single line, white bold sans with a black outline,
 // centred lower-middle (~64 % of frame height), hard swaps on word timing.
-// Opt-in: render it only when the user asks for captions (default: no captions).
+// Always on: render it in every short.
 // Timing source of truth is the scene's voice/words.json [{ w, s, e }] in seconds;
 // every caption check is timed to words.json, like every visual reaction.
 import React, { useMemo } from "react";

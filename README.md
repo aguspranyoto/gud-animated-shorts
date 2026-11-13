@@ -2,7 +2,7 @@
 
 The free Claude skill from the video **"How to Make Viral Animated Shorts Using Claude (Full Workflow)"**, adapted for Indonesian educational content.
 
-It makes 45-60 s vertical animated educational shorts in Bahasa Indonesia kasual (Aku/Kamu): 2D characters in a colourful 3D world, with ink outlines, a painted town, lens blur, gliding cameras, AI TTS voice with emotion tags, march score and sound effects. Storytelling is escalating — from an everyday phenomenon to deeper science/tech (see `references/VIDEO_FORMAT.md`). Everything is rendered with three.js inside Remotion on your own PC, with no AI video generator.
+It makes 45-60 s vertical animated educational shorts in Bahasa Indonesia kasual (Aku/Kamu): 2D characters in a colourful 3D world, with ink outlines, a painted town, lens blur, gliding cameras, VoiceStudio-cloned voice (one take per script line, Style set from each line's emotion tag), always-on captions, march score and sound effects. Storytelling is escalating — from an everyday phenomenon to deeper science/tech (see `references/VIDEO_FORMAT.md`). Everything is rendered with three.js inside Remotion on your own PC, with no AI video generator. VoiceStudio does NOT read `[emotion]` bracket tags, so tags live in `script.txt` as directions and are stripped before generating.
 
 Proven look: **The Bridge That Fell for a Song**, a 67 s short about the 1831 Broughton bridge. Keep its visual style, use the VIDEO_FORMAT formula for story/script/voice.
 
@@ -27,12 +27,14 @@ Proven look: **The Bridge That Fell for a Song**, a 67 s short about the 1831 Br
 2. You need [Remotion](https://www.remotion.dev/) with `@remotion/three`, plus Node, Python 3 and ffmpeg.
 3. In Claude Code, say: _"Pakai skill gud animated shorts, buatkan short tentang …"_.
 
-Claude then follows `SKILL.md` + `references/VIDEO_FORMAT.md`: topic and facts, then script (`script.txt` Bahasa Indonesia + emotion tags), then voice (AI TTS), then the shot plan in `story.ts`, then stills, then renders. Agents check your frames against the reports and the frames, and you get the final 2K render and sound mix.
+Claude then follows `SKILL.md` + `references/VIDEO_FORMAT.md`: topic and facts, then script (`script.txt` Bahasa Indonesia + emotion tags), then voice (ALWAYS VoiceStudio, per line, Style from tag), then captions (ALWAYS on), then the shot plan in `story.ts`, then stills, then renders. Agents check your frames against the reports and the frames, and you get the final 2K render and sound mix.
 
 ## Notes
 
 - Language: Bahasa Indonesia kasual (Aku/Kamu) only. Target Indonesia, tone ceria/lucu/energik, durasi 45-60 detik untuk Shorts/TikTok/Reels.
-- Script output is TTS-only: `script.txt` = judul + narasi + emotion tags, tanpa timestamp/arahan visual.
+- Script output is TTS-only: `script.txt` = judul + narasi + emotion tags, tanpa timestamp/arahan visual. Tags are directions only: strip `[tag]` before VoiceStudio, set Style per line instead.
+- Voice is ALWAYS VoiceStudio voice cloning (saved voice profile), generated per line (one WAV per `script.txt` line, then concatenated). Reference clip ≤20 s with matching transcript.
+- Captions are ALWAYS on (max 2 words per chunk, timed to `words.json`).
 - Set `REMOTION_TMP` to a folder on a big drive. Every Remotion bundle copies `public/` (~1.3 GB) into the temp folder.
 - Story, characters and voice should always be your own. Use the references for the look, not the content.
 
