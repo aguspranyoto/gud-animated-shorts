@@ -81,12 +81,16 @@ User rules that apply:
    - Set `ENTRY=src/sandboxes/<n>/index.tsx` (and `COMP=<Comp>`) to render a sandbox copy.
    - Make side-by-sides against reference frames with `python scripts/sbs_sheet.py out.jpg --ours ... --ref ...`.
    - Send them to an Opus max verifier: 1-3 images, a ≤200-word verdict.
-10. **Final render.**
+10. **Contact sheet gate (MANDATORY — never render video before this passes).**
+    - Render one still per second: `node scripts/stills.mjs out/<name>/sheet/f_ 0,30,60,... 0.3`, then tile with `python3 scripts/sheet.py out/<name>/sheet f_ out/<name>/sheet_<name>.jpg 10` (10 columns, like `references/sheets/*.jpg`).
+    - Review the WHOLE sheet for: broken/void frames, characters missing or eclipsed, wrong facing, caption timing/overlap, flicker-risk geometry (camera passing through cards/furniture). Fix, re-sheet, repeat until clean.
+    - Only then proceed; the 2K render must use the exact code the approved sheet was made from.
+11. **Final render.**
     - `npx remotion render src/index.ts <Comp> out/<name>/video.mp4 --codec h264 --crf 16 --scale 1.3333`
     - Mux with `-map 0:v:0 -map 1:a:0` (Remotion writes a silent audio track).
     - QA: `python scripts/short_qa.py final.mp4 out/<name>/qa shots.json` checks every frame for black, white, frozen and pop frames, plus loudness and sheets.
     - Fix anything it finds, then run a deep Opus audit.
-11. **Deliver.** SendUserFile the final mp4, update memory, write notes.
+12. **Deliver.** SendUserFile the final mp4, update memory, write notes.
 
 ## Captions (ALWAYS on; every short ships with them)
 Reference style (`references/frames/*.jpg`, measured in STYLE_BIBLE.md): one chunk of
