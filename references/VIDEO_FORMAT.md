@@ -160,7 +160,7 @@ Jadi, sekarang kamu tahu kan? AC itu sebenarnya bukan menghilangkan panas, tapi 
 - [ ] Ada transisi dan eskalasi informasi.
 - [ ] Informasi ilmiah sudah diperiksa akurasinya.
 - [ ] Narasi menggunakan bahasa Indonesia kasual.
-- [ ] Setiap baris narasi diawali label speaker (`Speaker 1`, `Speaker 2`, ...) plus gender bila diketahui (`Speaker 2 (perempuan)`); satu speaker = satu suara.
+- [ ] Setiap baris narasi diawali label speaker (`Speaker 1`, `Speaker 2`, ...) plus gender bila diketahui (`Speaker 2 (perempuan)`); satu speaker = satu suara. AI otomatis memilihkan voice tiap speaker dari labelnya (lihat Casting di SKILL.md).
 - [ ] Kata bahasa Inggris ditulis ulang sesuai bunyinya dalam ejaan Indonesia agar TTS mengucapkannya benar (lowbat → lowbet, summary → sameri).
 - [ ] Setiap bagian narasi dilengkapi emotion tags.
 - [ ] Durasi ideal 45–60 detik.
@@ -177,7 +177,7 @@ Speaker 2 (perempuan) [explaining]
 
 Nah, itu tandanya hormon laparmu lagi kerja!
 
-Tidak perlu timestamp, arahan visual, deskripsi scene, atau catatan editing karena file ini khusus untuk Text-to-Speech. Saat generate suara, tiap baris dirender dengan voice profile speakernya masing-masing (lihat Casting di SKILL.md).
+Tidak perlu timestamp, arahan visual, deskripsi scene, atau catatan editing karena file ini khusus untuk Text-to-Speech. Saat generate suara, tiap baris otomatis dirender dengan voice yang dipilih AI untuk speakernya dari 6 voice VoiceStudio (lihat Casting di SKILL.md).
 
 8. Aturan paling penting
    Jangan membuat video seperti guru yang sedang mengajar di kelas.
