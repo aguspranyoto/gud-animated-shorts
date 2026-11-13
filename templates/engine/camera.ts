@@ -56,7 +56,7 @@ export const rolled = (s: (f: number) => Shot, roll: number) => (f: number): Sho
 
 
 // ---------------- table-driven timeline (scene supplies the tables) ----------------
-export type ShotDef<T = unknown> = { id: number; a: number; b: number; light: "day" | "golden"; tau: (t: number) => number } & T;
+export type ShotDef<T = unknown> = { id: number; a: number; b: number; light: "day" | "golden" | "night"; tau: (t: number) => number } & T;
 export const shotAt = <S extends { id: number; a: number; b: number }>(shots: S[], f: number): S =>
   shots.find((s) => f >= s.a && f < s.b) ?? shots[shots.length - 1];
 /** layers to draw at frame f: base shot, plus the next shot fading in during a crossfade */

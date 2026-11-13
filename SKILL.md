@@ -43,7 +43,7 @@ User rules that apply:
    - Put them in the project folder, e.g. `~/bridge-short/voice/`.
    - Hand-fix the word timings. Everything is timed to words.json.
 4. **Shot plan** in `story.ts`: copy `templates/scenes/broughton-1831/` (the finished example scene) to `src/videos/<name>/`, import the engine from `templates/engine/`, register a new composition in `src/Root.tsx`, and rename scene constants to your story. Generic camera grammar lives in `templates/engine/camera.ts`; the scene's story.ts holds only your SHOTS/CAMS/DOF/story-physics tables.
-   - `SHOTS`: id, a/b frames, light day/golden, crowd mode, `tau` story time.
+   - `SHOTS`: id, a/b frames, light day/golden/night, crowd mode, `tau` story time.
    - `XFADE`: crossfades at place/time changes.
    - `FLASH_AT`: a white flash after the hook.
    - `CAMS`: per-shot keys `{f, dur?, cut?, s: f => {pos, look, fov, roll}}`.
@@ -100,6 +100,10 @@ lighting 5-6, ink 6, textures 5-6, characters 7, depth 6-7, composition 6-7 (fro
     top #3e7fd2 → horizon #b8d0ec, fog = horizon, 25→300 m, uSat 1.08, ~15 % blue haze past 60 m.
   - golden: az 6 / el 7 (backlit low sun), key toward #FFB36B ×1.5, violet-blue shade (facade ≈ #444380), sky
     #ffc47c → #8a6f8a, peach fog only past 50 m, sun disc #ffcf9e + bloom, contact blobs + real card shadows.
+  - night: az -30 / el 35 (pale moon, no real card shadows), cool-blue lit [.55,.62,.85], dark shade
+    [.10,.11,.20], sky top #060a1a → horizon #1a2440, fog #141c33 20→260 m, moon disc #e8ecf5 + bloom, uSat 0.95.
+    For a night scene just set `light: "night"` in `story.ts` SHOTS — the LIGHTS / LOOK / GRADES night presets
+    do the rest. Never invent a new light key, never edit the engine for time-of-day.
 - **Albedos** (`paint.ts`/`build.ts`): muted brick / cream / ochre / terracotta houses with plinth, cornice, sills,
   hoods, door step, chimney + pot, heights 7 / 8.4 / 9.8 m; warm grey/beige stone (saturation −35 % from "storybook");
   ochre wood deck C* ~51-58 with near-black seams; iron dark and desaturated. Never lemon, never lavender lit faces.
@@ -124,7 +128,7 @@ lighting 5-6, ink 6, textures 5-6, characters 7, depth 6-7, composition 6-7 (fro
   - Golden: peach horizon #ffd08a, violet-blue shadows (never brown), backlit sun.
 - **Depth:**
   - DOF on about 1/3 of screen time (CU, MS, inserts), cInf 10-16 px at 1080, focus on the eyes. Establishing and wide shots stay sharp.
-  - Fog = horizon colour, 25→420 m day, 20→360 m golden.
+  - Fog = horizon colour, 25→420 m day, 20→360 m golden, 20→260 m night (fog #141c33).
   - Bloom only on HDR emissives: threshold 1.0.
 - **Camera:**
   - Hard cuts on big jumps. Everything else is a smootherstep glide of 18-40 f, peak ≤ 25 px/f at 720p.
@@ -153,6 +157,10 @@ lighting 5-6, ink 6, textures 5-6, characters 7, depth 6-7, composition 6-7 (fro
 5. Contracts between owners live in exported constants (e.g. `NOINK` layer from ink.ts, `dofAt`/`FOREGROUND` from story.ts, `LIGHTS`/`LOOK` from lights.ts). Changing a contract means telling every owner that reads it.
 
 ## Gotchas
+- Time of day is a shot property, never an engine edit: for a night/"malam hari" scene just set
+  `light: "night"` in `story.ts` SHOTS. The engine already carries day/golden/night presets
+  (LIGHTS / LOOK / GRADES / GRADE_STRENGTH / CONTACT); moon, lamps or other night props go in the
+  scene's own world.ts, not in `templates/engine/`.
 - Kenney nature-kit materials are teal: recolour them by material name in build.ts.
 - Cameras end up inside houses: the sight-line culler in build.ts/world.ts removes anything blocking any camera ray.
 - Ink in the same merged effect pass as DOF gets overwritten. Ink must be its own pass before the blur.

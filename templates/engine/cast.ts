@@ -125,9 +125,9 @@ export const tier = (d: number): [number, number, number] =>
 // ---------------- light ----------------
 export const SUN = new THREE.Vector3(0.5, 0.75, -0.4).normalize();
 // scene sets this per frame: LNAME = shot light, SUN = world sun direction (see findSun)
-export const setCastLight = (l: "day" | "golden") => { LNAME = l; };
+export const setCastLight = (l: "day" | "golden" | "night") => { LNAME = l; };
 const tmp = new THREE.Vector3();
-let LNAME: "day" | "golden" = "day";
+let LNAME: "day" | "golden" | "night" = "day";
 const sunOf = (root: THREE.Object3D) => {
   let s: THREE.DirectionalLight | null = null;
   root.traverse((o) => { if (!s && o instanceof THREE.DirectionalLight && o.castShadow) s = o; });
@@ -199,7 +199,7 @@ export type Stage = { places: Place[]; fx: FxPlace[] };
 /** ground shadow under a standing / sitting card (review rounds 2-4), multiply, blue-violet: a TIGHT contact pool right under
  *  the feet (~.5 on screen at the core) so nobody floats, plus by day (cards cast no real shadow) a lighter soft tail
  *  stretched AWAY from the sun, length ~1.6 m / tan(sun elevation), capped. Golden: world.ts casts real card shadows. */
-const CONTACT: Record<"day" | "golden", [number, number, number]> = { day: [0.2, 0.21, 0.33], golden: [0.24, 0.2, 0.33] };
+const CONTACT: Record<"day" | "golden" | "night", [number, number, number]> = { day: [0.2, 0.21, 0.33], golden: [0.24, 0.2, 0.33], night: [0.12, 0.13, 0.22] };
 const TAIL: [number, number, number] = [0.42, 0.44, 0.62];
 const toSrgb = (v: number) => { const c = clamp01(v); return c <= 0.0031308 ? 12.92 * c : 1.055 * c ** (1 / 2.4) - 0.055; };
 const hexOf = (c: [number, number, number], k: number) => "#" + c.map((v) => Math.round(255 * toSrgb(1 - (1 - v) * k)).toString(16).padStart(2, "0")).join("");

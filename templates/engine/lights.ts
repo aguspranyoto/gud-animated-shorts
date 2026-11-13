@@ -12,7 +12,7 @@ export type LightPreset = {
   sunCol: string; sunI: number; sky: string; ground: string; hemiI: number;         // three lights (unpatched mats only)
   bias: number; normalBias: number;
 };
-export const LIGHTS: Record<"day" | "golden", LightPreset> = {
+export const LIGHTS: Record<"day" | "golden" | "night", LightPreset> = {
   day: {
     az: 75, el: 48,
     lit: [1.58, 1.5, 1.33], shade: [0.3, 0.29, 0.36], lift: [0.05, 0.06, 0.11], lambert: 0.35, sideK: 0.84, term: 0.2,
@@ -31,6 +31,15 @@ export const LIGHTS: Record<"day" | "golden", LightPreset> = {
     sunCol: "#ffab5e", sunI: 5.5, sky: "#d8b0b8", ground: "#8a6a60", hemiI: 0.5,
     bias: -0.0006, normalBias: 0.03,
   },
+  night: {
+    az: -30, el: 35,
+    lit: [0.55, 0.62, 0.85], shade: [0.10, 0.11, 0.20], lift: [0.03, 0.045, 0.10], lambert: 0.4, sideK: 0.8, term: 0.15,
+    charTint: [0.82, 0.88, 1.0], charShade: 0.72, charGrad: 0.08, bodyGrad: 0.22, sideTint: [0.75, 0.80, 0.98],
+    blob: [0.35, 0.36, 0.52], actorShadow: false,
+    top: "#060a1a", hor: "#1a2440", skyCurve: [0.0, 0.5, 0.6], fog: "#141c33", fogNear: 20, fogFar: 260, sunDisc: "#e8ecf5",
+    sunCol: "#a8c0ff", sunI: 1.1, sky: "#2a3a5f", ground: "#2a2f45", hemiI: 0.65,
+    bias: -0.0004, normalBias: 0.02,
+  },
 };
 
 /** world-only look per light (sky stops by elevation in degrees, river colours, cloud palette). All colours are
@@ -42,7 +51,7 @@ export type WorldLook = {
   sat: number;                                                // shade.ts uSat: world albedo saturation (1 = as painted)
   cloud: { lit: string; mid: string; shade: string };
 };
-export const LOOK: Record<"day" | "golden", WorldLook> = {
+export const LOOK: Record<"day" | "golden" | "night", WorldLook> = {
   day: {
     // depth.md 2.2: horizon #9fb6e6 just above the skyline, upper sky #5e93d9 at ~20 deg (grade: frame top #5997e2)
     sky: { c: ["#b8d0ec", "#9cbfea", "#6a9fe0", "#4f8cdb", "#3373cc"], e: [0, 3, 8, 16, 40] },
@@ -59,5 +68,13 @@ export const LOOK: Record<"day" | "golden", WorldLook> = {
     cloud: { lit: "#ffd2a8", mid: "#f2a08f", shade: "#a98fc4" },
     bounce: [0.04, 0.02, 0.0],
     sat: 1.1,
+  },
+  night: {
+    // malam hari: horizon biru gelap, langit hampir hitam, bulan purnama pucat
+    sky: { c: ["#1a2440", "#141c33", "#0d1329", "#080c1e", "#04060f"], e: [0, 4, 10, 20, 40] },
+    water: { near: "#0d1a33", mid: "#0a1428", far: "#060c1c", crest: "#2a3f66", trough: "#04070f", glint: "#cdd8f0", shade: [0.25, 0.30, 0.50] },
+    cloud: { lit: "#2a3452", mid: "#1c2440", shade: "#121828" },
+    bounce: [0.02, 0.03, 0.06],
+    sat: 0.95,
   },
 };

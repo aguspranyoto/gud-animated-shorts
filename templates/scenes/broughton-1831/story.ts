@@ -40,7 +40,7 @@ export type BridgeState = { bounce: number; drop: number; snap: number; collapse
 export const deckY = (z: number, b: BridgeState) => D0 + b.bounce * shapeZ(z) - b.drop * DROP_H * dropW(z);
 
 // ---------------- shots ----------------
-export type Light = "day" | "golden";
+export type Light = "day" | "golden" | "night";
 export type Crowd = "march" | "fall" | "water" | "bank" | "tourists" | "none";
 export type ShotDef = { id: number; a: number; b: number; light: Light; crowd: Crowd; tau: (t: number) => number; towns?: boolean };
 export const SHOTS: ShotDef[] = [
