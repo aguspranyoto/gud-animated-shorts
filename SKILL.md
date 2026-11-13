@@ -1,14 +1,15 @@
 ---
 name: gud-animated-shorts
-description: Make a ~55-70 s vertical cartoon story short in the "2D characters in a colourful 3D world" style (flat bean-head cartoon cards with ink outlines, painted 3D town/world with black ink lines, saturated sky, depth-of-field backgrounds, gliding cameras, voice narration, synthesized SFX + march-style music), rendered with three.js inside Remotion. Proven on "The Bridge That Fell for a Song" (2026-10-31). Use when the user asks for another video "like the bridge video", "like the soldiers/bridge short", "in that cartoon 3D style", a history/science story short with cartoon characters in 3D, or says "use the cartoon short skill".
+description: Make a 45-60 s vertical cartoon educational short in Bahasa Indonesia in the "2D characters in a colourful 3D world" style (flat bean-head cartoon cards with ink outlines, painted 3D town/world with black ink lines, saturated sky, depth-of-field backgrounds, gliding cameras, AI TTS voice with emotion tags, synthesized SFX + music), rendered with three.js inside Remotion. Storytelling follows references/VIDEO_FORMAT.md (escalating from everyday phenomenon to complex science/tech). Use when the user asks for an educational animation short, "like the bridge video" look, "in that cartoon 3D style", or says "use the cartoon short skill".
 ---
 
-# Cartoon 3D story short (three.js + Remotion)
+# Cartoon 3D educational short (three.js + Remotion, Bahasa Indonesia)
 
-Proven example: **The Bridge That Fell for a Song**. It is an original 67 s short about the 1831 Broughton bridge and 74 soldiers marching in step.
+Content format source of truth: **references/VIDEO_FORMAT.md** (escalating educational storytelling, 45-60 s, Bahasa Indonesia kasual Aku/Kamu, target Indonesia).
+Visual style reference: **The Bridge That Fell for a Song** (67 s, 1831 Broughton bridge). Keep its look, replace its story formula with VIDEO_FORMAT.md.
 - Code: a scene folder `src/videos/<name>/` of your Remotion project (e.g. the example `templates/scenes/broughton-1831/`, composition `BroughtonShort`, 1080x1920, 30 fps) on top of the reusable engine `templates/engine/`.
-- Script, voice and sound: `~/bridge-short/`.
-- Style research: `references/`.
+- Script, voice and sound: `~/bridge-short/` (but script format follows VIDEO_FORMAT.md: `script.txt` with title + narration + emotion tags, no timestamps/visual directions).
+- Style research: `references/` (VIDEO_FORMAT.md for storytelling/script/voice, STYLE_BIBLE.md + reports/*.md + frames/ for visuals).
 
 The style reference is a channel studied privately (`references/`: STYLE_BIBLE.md, reports/*.md, frames/).
 - Those videos are private study material. Never upload, publish or send them.
@@ -17,9 +18,11 @@ The style reference is a channel studied privately (`references/`: STYLE_BIBLE.m
 
 User rules that apply:
 - No captions or labels in the video by default; add captions only when the user asks (see Captions).
-- English only.
-- Voice: one steady tone.
-- Jokes are researched real facts.
+- Bahasa Indonesia kasual only (gaya Aku/Kamu). Never English narration.
+- Target market Indonesia. Tone ceria, lucu, energik — seperti cerita ke teman, bukan guru di kelas.
+- Durasi 45-60 detik. Platform YouTube Shorts, TikTok, Reels.
+- Voice: AI Text-to-Speech with emotion tags (`[curious]`, `[excited]`, `[seriously]`, `[surprised]`, `[explaining]`, `[enthusiastic]`, `[amazed]`, `[energetic]`, `[playful]`, `[whispering]`). Every narration block carries a tag; never monotone.
+- Jokes are researched real facts. Information accuracy checked; never sacrifice accuracy for sensation.
 - Standard mix: music +3 dB, SFX -6 dB, voice unchanged.
 - Final export 2K vertical: 1440x2560, `--scale 1.3333`.
 - Opus max verifies every check.
@@ -27,19 +30,19 @@ User rules that apply:
 - "Just do it" once the script is approved.
 
 ## Pipeline
-1. **Topic and facts.** Pick one surprising true story with a physical cause and effect (it should be visual), plus a simple everyday analogy that explains it.
-   - Write the facts with their source at the top of `SCRIPT.md`.
-2. **Script** (~3.7 words/s, 55-70 s). Beat formula from the bridge short:
-   - **Hook:** the absurd fact in one line ("Seventy-four soldiers knocked down an iron bridge just by walking across it.").
-   - **Setting:** year, place, pride.
-   - **Action:** escalation over three or four beats, each a little bigger.
-   - **Snap:** the moment it breaks.
-   - **Deadpan double line:** "Luckily ... / Unluckily ...".
-   - **Explanation:** one physics idea through an everyday analogy (the kid on a swing).
-   - **Consequence:** the rule it created.
-   - **Callback twist:** the ending.
+1. **Topic and facts.** Pick one topic that starts from something easy to imagine, has a scientific/logical explanation, can escalate to something more complex, has interesting animation potential, and gives the viewer new knowledge (see VIDEO_FORMAT.md section 5). Good categories: everyday science/physics, daily tech, human body, nature, history, transport, economy, unique Indonesian phenomena.
+   - Write the facts with their source at the top of `SCRIPT.md`. Check accuracy before writing.
+2. **Script** (45-60 s, Bahasa Indonesia kasual Aku/Kamu). Escalating formula from VIDEO_FORMAT.md, not the old bridge beats:
+   - **Hook "Kalo kamu...":** everyday relatable situation ("Kalo kamu nyalain AC, kamar kamu jadi dingin...").
+   - **Basic Explanation:** explain the phenomenon simply (AC memindahkan panas, bukan menciptakan dingin).
+   - **Key Information "Ini namanya...":** introduce the scientific term naturally (Ini namanya refrigeran).
+   - **Escalation:** connect to a more complex system (indoor/outdoor AC, kompresor, kondensor...).
+   - **Deep Explanation:** components/process/how-it-works step by step.
+   - **Closing:** conclusion or surprising fact so the viewer leaves with new knowledge.
+   - Mandatory storytelling bridges: "Kalo kamu...", "Nah, ini namanya...", "Tapi tunggu dulu!", "Terus, gimana caranya?". Never jump straight to the main topic; let the viewer discover it gradually.
+   - Every narration block gets one emotion tag. Output standard: `script.txt` contains only title + narration + emotion tags (no timestamps, visual directions, scene descriptions, or editing notes — that file is TTS-only).
    - Never describe on screen what the viewer already sees.
-3. **Voice.** Record or generate `voice.wav`, then make its word timings `words.json` (any speech-to-text with word times).
+3. **Voice.** Generate AI TTS `voice.wav` from `script.txt` (emotion tags are expression directions; actual effect depends on the TTS model), then make its word timings `words.json` (any speech-to-text with word times).
    - Put them in the project folder, e.g. `~/bridge-short/voice/`.
    - Hand-fix the word timings. Everything is timed to words.json.
 4. **Shot plan** in `story.ts`: copy `templates/scenes/broughton-1831/` (the finished example scene) to `src/videos/<name>/`, import the engine from `templates/engine/`, register a new composition in `src/Root.tsx`, and rename scene constants to your story. Generic camera grammar lives in `templates/engine/camera.ts`; the scene's story.ts holds only your SHOTS/CAMS/DOF/story-physics tables.
