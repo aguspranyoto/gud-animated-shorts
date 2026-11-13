@@ -16,7 +16,7 @@ The style reference is a channel studied privately (`references/`: STYLE_BIBLE.m
 - Never say the channel's name in a voice-over or description.
 
 User rules that apply:
-- No captions or labels in the video.
+- No captions or labels in the video by default; add captions only when the user asks (see Captions).
 - English only.
 - Voice: one steady tone.
 - Jokes are researched real facts.
@@ -78,6 +78,18 @@ User rules that apply:
     - QA: `python scripts/short_qa.py final.mp4 out/<name>/qa shots.json` checks every frame for black, white, frozen and pop frames, plus loudness and sheets.
     - Fix anything it finds, then run a deep Opus audit.
 11. **Deliver.** SendUserFile the final mp4, update memory, write notes.
+
+## Captions (opt-in only; default is no captions)
+Reference style (`references/frames/*.jpg`, measured in STYLE_BIBLE.md): one chunk of
+max 2 words, a single line, white bold sans with a black outline, centred
+lower-middle (~64 % of frame height), hard swaps on each chunk. Gaps between chunks
+show nothing. Template: `templates/engine/captions.tsx` (`chunkWords` / `captionAt`
+/ `CaptionOverlay`); copy it into the scene and render the overlay on top of the
+shot stack in the composer (`<AbsoluteFill>` over the `ShotView`s, DOM so it scales
+with `--scale` automatically). Timing source of truth is the scene's
+`voice/words.json` (`[{ w, s, e }]` seconds); chunk words greedily in order (casing
+and punctuation as spoken). QA: every chunk is timed to words.json, max 2 words,
+one line only (`whiteSpace: nowrap`), nothing overlaps the safe bottom band.
 
 ## Final look values (Broughton 1831 after 4 verifier rounds; presets in `templates/engine/`, example scene in `templates/scenes/broughton-1831/`)
 Start every new short from the engine + the example scene (copy `templates/scenes/broughton-1831/` to `src/videos/<name>/`): the look lives in these engine values, the
