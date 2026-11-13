@@ -179,6 +179,27 @@ export const lidAt = (t: number, i: number, swaps: number[] = []) => {
 };
 const fkey = (o: object) => JSON.stringify(o, (_k, v) => (typeof v === "number" ? q(v) : v));
 
+/** word timing stamp (words.json `[{ w, s, e }]` seconds) — structural match, no import needed */
+export type Word = { w: string; s: number; e: number };
+/** jaw aperture 0..1 while a word is spoken: ~3.5 open/close flaps per second
+ *  with per-word phase so it doesn't look looped, eased at word edges so the
+ *  mouth doesn't snap. Feed words.json; pass the result as the character's
+ *  FrontOpts/SideOpts `mouth`. Expression still carries the emotion — this
+ *  only opens the jaw. Pool keys already include opts, so talking frames
+ *  get their own canvases like blinks do. */
+export const mouthAt = (words: Word[], t: number, seed = 0) => {
+  for (let i = 0; i < words.length; i++) {
+    const w = words[i];
+    if (t >= w.s && t < w.e) {
+      const ph = (t - w.s) * 3.5 + hh(i * 7 + seed, 3) * 2;
+      const a = 0.5 + 0.5 * Math.sin(ph * Math.PI * 2);
+      const edge = Math.min(1, (t - w.s) / 0.04, (w.e - t) / 0.04);
+      return Math.max(0, Math.min(1, 0.25 + 0.75 * a)) * Math.max(0, edge);
+    }
+  }
+  return 0;
+};
+
 export type Who = { i: number; o: Outfit; okey: string };
 /** one character drawing in the 600 x 1000 design space, sized by distance, lit from the scene's sun */
 export const person = (cam: CamInfo, who: Who, x: number, y: number, z: number, view: { side: boolean; mirror: boolean }, fo: FrontOpts, so: SideOpts, scale = 1): Place & { tierKey: string } => {

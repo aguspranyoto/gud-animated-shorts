@@ -1,6 +1,6 @@
 ---
 name: gud-animated-shorts
-description: Make a 45-60 s vertical cartoon educational short in Bahasa Indonesia in the "2D characters in a colourful 3D world" style (flat bean-head cartoon cards with ink outlines, painted 3D town/world with black ink lines, saturated sky, depth-of-field backgrounds, gliding cameras, synthesized SFX + music), rendered with three.js inside Remotion. Voice is ALWAYS VoiceStudio voice cloning (saved voice profile, generated per line, one WAV per script line, then concatenated). Captions are ALWAYS on (max 2 words per chunk, timed to words.json). Storytelling follows references/VIDEO_FORMAT.md (escalating from everyday phenomenon to complex science/tech). Use when the user asks for an educational animation short, "like the bridge video" look, "in that cartoon 3D style", or says "use the cartoon short skill".
+description: Make a 45-60 s vertical cartoon educational short in Bahasa Indonesia in the "2D characters in a colourful 3D world" style (flat bean-head cartoon cards with ink outlines, painted 3D town/world with black ink lines, saturated sky, depth-of-field backgrounds, gliding cameras, synthesized SFX + music), rendered with three.js inside Remotion. Voice is ALWAYS VoiceStudio voice cloning (one saved voice profile per speaker: `Speaker 1`, `Speaker 2`, ..., generated per line, one WAV per script line, then concatenated; talking mouths follow words.json timing). Captions are ALWAYS on (max 2 words per chunk, timed to words.json). Storytelling follows references/VIDEO_FORMAT.md (escalating from everyday phenomenon to complex science/tech). Use when the user asks for an educational animation short, "like the bridge video" look, "in that cartoon 3D style", or says "use the cartoon short skill".
 ---
 
 # Cartoon 3D educational short (three.js + Remotion, Bahasa Indonesia)
@@ -8,7 +8,7 @@ description: Make a 45-60 s vertical cartoon educational short in Bahasa Indones
 Content format source of truth: **references/VIDEO_FORMAT.md** (escalating educational storytelling, 45-60 s, Bahasa Indonesia kasual Aku/Kamu, target Indonesia).
 Visual style reference: **The Bridge That Fell for a Song** (67 s, 1831 Broughton bridge). Keep its look, replace its story formula with VIDEO_FORMAT.md.
 - Code: a scene folder `src/videos/<name>/` of your Remotion project (e.g. the example `templates/scenes/broughton-1831/`, composition `BroughtonShort`, 1080x1920, 30 fps) on top of the reusable engine `templates/engine/`.
-- Script, voice and sound: `~/bridge-short/` (but script format follows VIDEO_FORMAT.md: `script.txt` with title + narration + emotion tags, no timestamps/visual directions).
+- Script, voice and sound: `~/bridge-short/` (but script format follows VIDEO_FORMAT.md: `script.txt` with `Speaker N` labels + narration + emotion tags, no timestamps/visual directions).
 - Style research: `references/` (VIDEO_FORMAT.md for storytelling/script/voice, STYLE_BIBLE.md + reports/*.md + frames/ for visuals).
 
 The style reference is a channel studied privately (`references/`: STYLE_BIBLE.md, reports/*.md, frames/).
@@ -18,9 +18,10 @@ The style reference is a channel studied privately (`references/`: STYLE_BIBLE.m
 
 User rules that apply:
 - Captions are ALWAYS on (see Captions). Never ship without them.
-- Voice is ALWAYS VoiceStudio voice cloning (saved voice profile, default `educator laki` unless the user names another). Never use another TTS.
-- Audio is ALWAYS generated per line: one VoiceStudio take per `script.txt` narration line, then concatenated to `voice.wav`. Never one giant single generation for the whole script.
+- Voice is ALWAYS VoiceStudio voice cloning, one saved voice profile PER SPEAKER (see Casting below). Never use another TTS.
+- Audio is ALWAYS generated per line: one VoiceStudio take per `script.txt` narration line with that line's speaker profile, then concatenated to `voice.wav`. Never one giant single generation for the whole script.
 - Emotion tags (`[curious]`, `[excited]`, `[seriously]`, `[surprised]`, `[explaining]`, `[enthusiastic]`, `[amazed]`, `[energetic]`, `[playful]`, `[whispering]`) are performance directions in `script.txt` only. VoiceStudio does NOT read bracket tags, so strip them before generating and map each line's tag to that line's VoiceStudio `Style` field instead. Every narration line still carries one tag; never monotone.
+- **Casting (multi-speaker).** When the script has more than one actor, label lines `Speaker 1`, `Speaker 2`, ... (with gender where known: `Speaker 2 (perempuan)`). Before generating, list what's actually installed: VoiceStudio Clone page, or API `GET /profiles` on the local backend. Pick one saved profile per speaker by name: a name containing `female` = female voice, a name containing `male` = male voice (check `female` FIRST — it contains the substring `male`). If no name matches the speaker's gender, use whatever profile is available and report the mapping so the user can create proper profiles later.
 - Bahasa Indonesia kasual only (gaya Aku/Kamu). Never English narration.
 - Target market Indonesia. Tone ceria, lucu, energik.
 - Durasi 45-60 detik. Platform YouTube Shorts, TikTok, Reels.
@@ -42,14 +43,15 @@ User rules that apply:
    - **Deep Explanation:** components/process/how-it-works step by step.
    - **Closing:** conclusion or surprising fact so the viewer leaves with new knowledge.
    - Mandatory storytelling bridges: "Kalo kamu...", "Nah, ini namanya...", "Tapi tunggu dulu!", "Terus, gimana caranya?". Never jump straight to the main topic; let the viewer discover it gradually.
-   - Every narration block gets one emotion tag. Output standard: `script.txt` contains only title + narration + emotion tags (no timestamps, visual directions, scene descriptions, or editing notes — that file is TTS-only).
+   - Every narration line gets one speaker label + one emotion tag. Output standard: `script.txt` contains only title + `Speaker N` (+ optional gender) + narration + emotion tags (no timestamps, visual directions, scene descriptions, or editing notes — that file is TTS-only).
    - English words in the narration MUST be respelled the way they sound in Indonesian orthography, so the Indonesian TTS pronounces them right (lowbat → lowbet, summary → sameri). Never write the original English spelling in `script.txt`.
    - Never describe on screen what the viewer already sees.
-3. **Voice (ALWAYS VoiceStudio, per line).** Strip the `[tags]` from `script.txt` (they are directions only — VoiceStudio would read them as literal words), then generate ONE take per narration line with the saved voice profile (default `educator laki`):
+3. **Voice (ALWAYS VoiceStudio, per line, per speaker).** Strip the `[tags]` from `script.txt` (they are directions only — VoiceStudio would read them as literal words), then generate ONE take per narration line with that line's speaker profile (see Casting above; default single-speaker profile is `educator laki`):
+   - VoiceStudio Clone page (or API `POST /generate` on the local backend `http://127.0.0.1:3900` with `profile_id`): text = one stripped line, language Indonesian, `Style` = that line's emotion tag without brackets (e.g. `[excited]` → Style `excited`). Template helper: `templates/scripts/voice_gen_voicestudio.py` (parses speakers, auto-picks profiles, concatenates).
    - VoiceStudio Clone page (or API `POST /generate` on the local backend `http://127.0.0.1:3900` with `profile_id`): text = one stripped line, language Indonesian, `Style` = that line's emotion tag without brackets (e.g. `[excited]` → Style `excited`).
    - Keep the reference clip ≤20 s with a matching transcript, or the sidecar fails with `REFERENCE_STT_MISSING` (see troubleshooting: short 3-10 s reference is ideal).
    - Concatenate the per-line WAVs in script order to `voice.wav` (5-10 ms crossfade or silence gap between lines).
-   - Then make per-line word timings with any speech-to-text with word times and offset each line's times by its start in the concat → `words.json` (`[{ w, s, e }]`). Hand-fix the timings. Everything (shots, SFX, captions) is timed to words.json.
+   - Then make per-line word timings with any speech-to-text with word times and offset each line's times by its start in the concat → `words.json` (`[{ w, s, e, sp }]` — `sp` = speaker number, so each character's mouth follows only its own lines via `mouthAt(words.filter(w => w.sp === N), t)`). Hand-fix the timings. Everything (shots, SFX, captions, mouths) is timed to words.json.
    - Put them in the project folder, e.g. `~/bridge-short/voice/` (`line_01.wav`, `line_02.wav`, ... + `voice.wav` + `words.json`).
 4. **Shot plan** in `story.ts`: copy `templates/scenes/broughton-1831/` (the finished example scene) to `src/videos/<name>/`, import the engine from `templates/engine/`, register a new composition in `src/Root.tsx`, and rename scene constants to your story. Generic camera grammar lives in `templates/engine/camera.ts`; the scene's story.ts holds only your SHOTS/CAMS/DOF/story-physics tables.
    - `SHOTS`: id, a/b frames, light day/golden/night, crowd mode, `tau` story time.
@@ -70,6 +72,7 @@ User rules that apply:
    - `toon.ts`: the Canvas2D `Pen` drawing API, 600x1000 design canvas, soles at y = 975, bean heads, stick limbs, plum variable-width outline, face library.
    - `cast.ts`: camera-facing billboards, crowds, effect cards, blinks, walk cycles. All billboards go on the `NOINK` layer.
    - `cardshade.ts`: cards lit by the scene light, no emissive.
+   - **Talking mouths (mandatory for every speaking shot).** Expression carries the emotion; the jaw follows the voice: feed that speaker's `words.json` timings into `mouthAt(words, t, seed)` (engine `cast.ts`) and pass the result as the character's `FrontOpts`/`SideOpts` `mouth` (0 closed .. 1 open). Below ~0.12 the static expression mouth is drawn; above it the jaw opens. Silence = mouth shut.
 7. **Post** (`<Name>.tsx` composer + engine `ink.ts` + `lensblur.ts` + `grade.ts`).
    - Composer order: ink → lens pre → lens main → bloom → NEUTRAL tone map → grade (MSAA 4).
    - Every pixel parameter scales with output height / 1920.
