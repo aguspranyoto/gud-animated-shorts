@@ -66,6 +66,7 @@ User rules that apply:
    - `lights.ts`: LIGHTS plus the LOOK sky/river/cloud palette per light.
    - `shade.ts`: two-tone shading and `untone()`.
    - `build.ts`: town, houses and Kenney CC0 kit props, recoloured, with sight-line culling of anything blocking a camera.
+   - `templates/shared/house/`: reusable indoor dining room (`buildHouse()` + anchors: tableTop/plateKid/plateMom/kidSeat/momSeat/windowPos/lampPos/doorPos). Copy to your project's `src/shared/house/` for any indoor dialogue short instead of rebuilding a room.
    - `paint.ts`: HD Canvas2D painted textures with seams painted in as dark tints.
    - `world.ts`: sky shader, fog = horizon colour, river, per-frame posing, sun frozen per shot and camera-relative.
 6. **Characters.**
