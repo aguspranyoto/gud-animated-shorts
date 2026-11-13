@@ -43,6 +43,7 @@ User rules that apply:
    - **Closing:** conclusion or surprising fact so the viewer leaves with new knowledge.
    - Mandatory storytelling bridges: "Kalo kamu...", "Nah, ini namanya...", "Tapi tunggu dulu!", "Terus, gimana caranya?". Never jump straight to the main topic; let the viewer discover it gradually.
    - Every narration block gets one emotion tag. Output standard: `script.txt` contains only title + narration + emotion tags (no timestamps, visual directions, scene descriptions, or editing notes — that file is TTS-only).
+   - English words in the narration MUST be respelled the way they sound in Indonesian orthography, so the Indonesian TTS pronounces them right (lowbat → lowbet, summary → sameri). Never write the original English spelling in `script.txt`.
    - Never describe on screen what the viewer already sees.
 3. **Voice (ALWAYS VoiceStudio, per line).** Strip the `[tags]` from `script.txt` (they are directions only — VoiceStudio would read them as literal words), then generate ONE take per narration line with the saved voice profile (default `educator laki`):
    - VoiceStudio Clone page (or API `POST /generate` on the local backend `http://127.0.0.1:3900` with `profile_id`): text = one stripped line, language Indonesian, `Style` = that line's emotion tag without brackets (e.g. `[excited]` → Style `excited`).

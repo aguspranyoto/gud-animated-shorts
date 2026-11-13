@@ -160,6 +160,7 @@ Jadi, sekarang kamu tahu kan? AC itu sebenarnya bukan menghilangkan panas, tapi 
 - [ ] Ada transisi dan eskalasi informasi.
 - [ ] Informasi ilmiah sudah diperiksa akurasinya.
 - [ ] Narasi menggunakan bahasa Indonesia kasual.
+- [ ] Kata bahasa Inggris ditulis ulang sesuai bunyinya dalam ejaan Indonesia agar TTS mengucapkannya benar (lowbat → lowbet, summary → sameri).
 - [ ] Setiap bagian narasi dilengkapi emotion tags.
 - [ ] Durasi ideal 45–60 detik.
 - [ ] Script bersih dan siap dimasukkan ke TTS.
