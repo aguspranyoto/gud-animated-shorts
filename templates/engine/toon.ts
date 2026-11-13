@@ -722,6 +722,79 @@ export const bodySide = (p: Pen, o: Outfit, opts: SideOpts) => {
   p.rot = null;
 };
 
+export type BackOpts = {
+  /** "sit" draws the seated torso (butt at design sole - 0.2 HH, like bodyFront);
+   *  "stand" draws hips + legs + shoes */
+  mode?: "stand" | "sit"; light?: number; seed?: number;
+};
+
+/** back of the head + shoulders: the character faces away from the camera
+ *  (OTS foregrounds, wides where someone addresses the lens). No face is
+ *  drawn — emotion rides the facing character. Hair covers the head; a
+ *  bonnet draws as a headscarf instead. Same 600 x 1000 design space
+ *  (soles y=975), same ink language (plum ring, thick side away from light). */
+export const bodyBack = (p: Pen, o: Outfit, opts: BackOpts) => {
+  const { mode = "stand", light = DEF_LIGHT, seed = 1 } = opts;
+  const Bd = BUILD[o.build ?? "adult"];
+  const H = headBlob(seed, Bd.a, 0);
+  const W = 2 * H.a, HH = 2 * H.b, u = W / 100;
+  const sole = 975, ow = 5 * u, thick = thickAngle(light);
+  const torsoBot = mode === "sit" ? sole - 0.2 * HH : sole - Bd.legs * HH;
+  const chin = torsoBot - Bd.torso * HH, hc = chin - H.b;
+  // hair mass over the whole head (no face: the character faces away)
+  if (o.hat === "bonnet") {
+    const hp = blobPts(300, hc, { ...H, a: H.a * 1.12, b: H.b * 1.1 });
+    p.shadedFill(hp, BONNET, mul(BONNET, SH_CLOTH), light, H.a);
+    p.inkRing(hp, ow, thick);
+    p.arc(300, hc - H.b * 0.82, 0.5 * W, 0.2 * HH, 200, 340, 7 * u, BONNET_BRIM);
+  } else {
+    const hair = o.hair ?? "#1f1a16";
+    const hp = blobPts(300, hc, H);
+    p.shadedFill(hp, hair, mul(hair, SH_CLOTH), light, H.a);
+    p.inkRing(hp, ow, thick);
+    const st = shade(hair, 0.55);
+    p.stroke([[300 - 34 * u, hc - 30 * u], [300 - 18 * u, hc + 30 * u]], 3 * u, st);
+    p.stroke([[300 + 6 * u, hc - 44 * u], [300 + 2 * u, hc + 22 * u]], 3 * u, st);
+    p.stroke([[300 + 38 * u, hc - 20 * u], [300 + 26 * u, hc + 38 * u]], 3 * u, st);
+    if (o.hat === "hair") {
+      p.stroke([[300 - 40 * u, hc + 10 * u], [300 - 34 * u, hc + 52 * u]], 4 * u, st);
+      p.stroke([[300 + 40 * u, hc + 10 * u], [300 + 34 * u, hc + 52 * u]], 4 * u, st);
+    }
+  }
+  // neck (mostly hidden) + collar
+  const skin = o.skin ?? SKIN;
+  p.poly([[300 - 12 * u, chin - 4 * u], [300 + 12 * u, chin - 4 * u],
+    [300 + 15 * u, chin + 16 * u], [300 - 15 * u, chin + 16 * u]], skin, 4 * u);
+  // torso: shoulders wide, seat/hips narrower (jacket, shaded like bodyFront)
+  const shY = chin + 0.12 * HH;
+  const tp: P2[] = mode === "sit"
+    ? [[300 - 0.95 * H.a, shY], [300 + 0.95 * H.a, shY],
+       [300 + 0.72 * H.a, torsoBot], [300 - 0.72 * H.a, torsoBot]]
+    : [[300 - 0.95 * H.a, shY], [300 + 0.95 * H.a, shY],
+       [300 + 0.62 * H.a, torsoBot], [300 - 0.62 * H.a, torsoBot]];
+  p.gradFill(tp, o.jacket, mul(o.jacket, SH_CLOTH), light);
+  p.clip(tp, () => {
+    if (o.belt) p.band([[300 - 0.65 * H.a, torsoBot - 0.12 * HH], [300 + 0.65 * H.a, torsoBot - 0.12 * HH]], o.belt, 5.5 * u, 1.8 * u);
+  });
+  p.inkRing(tp, ow, thick);
+  p.poly([[300 - 15 * u, chin + 8 * u], [300 + 15 * u, chin + 8 * u],
+    [300, chin + 26 * u]], shade(o.jacket, 0.7), 3.5 * u);
+  // arms resting alongside the torso
+  const armL: P2[] = [[300 - 0.88 * H.a, shY + 8 * u], [300 - 0.98 * H.a, torsoBot + 0.05 * HH]];
+  const armR: P2[] = [[300 + 0.88 * H.a, shY + 8 * u], [300 + 0.98 * H.a, torsoBot + 0.05 * HH]];
+  p.line(armL, o.jacket, 9 * u);
+  p.line(armR, o.jacket, 9 * u);
+  if (mode === "stand") {
+    const hipY = torsoBot + 0.06 * HH, ankY = sole - 4 * u;
+    const pants = mix(o.pants, INK, 0.55);
+    p.line([[300 - 0.3 * H.a, hipY], [300 - 0.34 * H.a, ankY]], pants, 5.8 * u);
+    p.line([[300 + 0.3 * H.a, hipY], [300 + 0.34 * H.a, ankY]], pants, 5.8 * u);
+    p.ell(300 - 0.34 * H.a, ankY + 2 * u, 8 * u, 4 * u, o.boots, 3 * u);
+    p.ell(300 + 0.34 * H.a, ankY + 2 * u, 8 * u, 4 * u, o.boots, 3 * u);
+  }
+  p.rot = null;
+};
+
 /** rope + seat + seated kid on a 700 x 2300 canvas; the pivot is design (350, 20); kid drawn at 0.92 scale */
 export const swingKid = (p: Pen, o: Outfit, kick: number, expr: Expr, light = DEF_LIGHT, blink: number = 0) => {
   const rope = 1830, k = 1.1, HH = 2 * headBlob(5, BUILD[o.build ?? "adult"].a, 1).b;

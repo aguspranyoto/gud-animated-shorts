@@ -73,6 +73,7 @@ User rules that apply:
    - `cast.ts`: camera-facing billboards, crowds, effect cards, blinks, walk cycles. All billboards go on the `NOINK` layer.
    - `cardshade.ts`: cards lit by the scene light, no emissive.
    - **Talking mouths (mandatory for every speaking shot).** Expression carries the emotion; the jaw follows the voice: feed that speaker's `words.json` timings into `mouthAt(words, t, seed)` (engine `cast.ts`) and pass the result as the character's `FrontOpts`/`SideOpts` `mouth` (0 closed .. 1 open). Below ~0.12 the static expression mouth is drawn; above it the jaw opens. Silence = mouth shut.
+   - **Back view (OTS foregrounds, wides).** `person(cam, who, x, y, z, { side: false, mirror: false, back: true }, {}, {}, scale, { mode: "sit" | "stand" })` draws hair + shoulders with no face (`bodyBack` in `toon.ts`, bonnet renders as headscarf). Use it whenever a character faces away from the camera instead of faking it with a side profile.
 7. **Post** (`<Name>.tsx` composer + engine `ink.ts` + `lensblur.ts` + `grade.ts`).
    - Composer order: ink → lens pre → lens main → bloom → NEUTRAL tone map → grade (MSAA 4).
    - Every pixel parameter scales with output height / 1920.

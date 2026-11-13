@@ -5,8 +5,8 @@
 // Cards, effects and blobs live on the NOINK layer so the world ink pass never outlines their quads.
 import * as THREE from "three";
 import {
-  Pen, bodyFront, bodySide, fxShadow, fxContact,
-  Outfit, Expr, FrontOpts, SideOpts,
+  Pen, bodyFront, bodySide, bodyBack, fxShadow, fxContact,
+  Outfit, Expr, FrontOpts, SideOpts, BackOpts,
 } from "./toon";
 import { FPS, clamp01 } from "./camera";
 import { NOINK } from "./ink";
@@ -201,16 +201,18 @@ export const mouthAt = (words: Word[], t: number, seed = 0) => {
 };
 
 export type Who = { i: number; o: Outfit; okey: string };
-/** one character drawing in the 600 x 1000 design space, sized by distance, lit from the scene's sun */
-export const person = (cam: CamInfo, who: Who, x: number, y: number, z: number, view: { side: boolean; mirror: boolean }, fo: FrontOpts, so: SideOpts, scale = 1): Place & { tierKey: string } => {
+/** one character drawing in the 600 x 1000 design space, sized by distance, lit from the scene's sun.
+ *  view.back = back of the head (OTS foregrounds, wides): no face is drawn. */
+export const person = (cam: CamInfo, who: Who, x: number, y: number, z: number, view: { side: boolean; mirror: boolean; back?: boolean }, fo: FrontOpts, so: SideOpts, scale = 1, bo: BackOpts = {}): Place & { tierKey: string } => {
   const d = cam.pos.distanceTo(tmp.set(x, y + 1.2, z)) / scale;
   const [w, h, k] = tier(d);
   const mirror = view.side && view.mirror, light = light2D(cam, mirror), seed = seedOf(who.i);
   const f2: FrontOpts = { ...fo, light, seed }, s2: SideOpts = { ...so, light, seed };
-  const key = view.side ? `S|${who.okey}|${fkey(s2)}` : `F|${who.okey}|${fkey(f2)}`;
+  const b2: BackOpts = { ...bo, light, seed };
+  const key = view.back ? `B|${who.okey}|${fkey(b2)}` : view.side ? `S|${who.okey}|${fkey(s2)}` : `F|${who.okey}|${fkey(f2)}`;
   return {
     key, x, y, z, scale, mirror, tierKey: `${w}`,
-    draw: (p) => (view.side ? bodySide(p, who.o, s2) : bodyFront(p, who.o, f2)),
+    draw: (p) => (view.back ? bodyBack(p, who.o, b2) : view.side ? bodySide(p, who.o, s2) : bodyFront(p, who.o, f2)),
     size: [w, h, k],
   };
 };
