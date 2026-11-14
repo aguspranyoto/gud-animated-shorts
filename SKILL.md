@@ -51,7 +51,7 @@ User rules that apply:
    - VoiceStudio Clone page (or API `POST /generate` on the local backend `http://127.0.0.1:3900` with `profile_id`): text = one stripped line, language Indonesian, `Style` = that line's emotion tag without brackets (e.g. `[excited]` → Style `excited`).
    - Keep the reference clip ≤20 s with a matching transcript, or the sidecar fails with `REFERENCE_STT_MISSING` (see troubleshooting: short 3-10 s reference is ideal).
    - Concatenate the per-line WAVs in script order to `voice.wav` (5-10 ms crossfade or silence gap between lines).
-   - Then make per-line word timings with any speech-to-text with word times and offset each line's times by its start in the concat → `words.json` (`[{ w, s, e, sp }]` — `sp` = speaker number, so each character's mouth follows only its own lines via `mouthAt(words.filter(w => w.sp === N), t)`). Hand-fix the timings. Everything (shots, SFX, captions, mouths) is timed to words.json.
+   - Then make per-line word timings with any speech-to-text with word times and offset each line's times by its start in the concat → `words.json` (`[{ w, s, e, sp }]` — `sp` = speaker number, so each character's mouth follows only its own lines via `mouthAt(words.filter(w => w.sp === N), t)`). Hand-fix the timings. Then QA the display text: STT transcribes what it hears (the TTS respellings), so restore proper display spelling in `w` WITHOUT touching `s`/`e` (e.g. `enol.` → `E0.`, `edi,` → `eddy,`, `standless.` → `stainless.`). The voice audio keeps the respelled pronunciation; captions show the correct written form. Everything (shots, SFX, captions, mouths) is timed to words.json.
    - Put them in the project folder, e.g. `~/bridge-short/voice/` (`line_01.wav`, `line_02.wav`, ... + `voice.wav` + `words.json`).
 4. **Shot plan** in `story.ts`: copy `templates/scenes/broughton-1831/` (the finished example scene) to `src/videos/<name>/`, import the engine from `templates/engine/`, register a new composition in `src/Root.tsx`, and rename scene constants to your story. Generic camera grammar lives in `templates/engine/camera.ts`; the scene's story.ts holds only your SHOTS/CAMS/DOF/story-physics tables.
    - `SHOTS`: id, a/b frames, light day/golden/night, crowd mode, `tau` story time.
@@ -108,7 +108,9 @@ shot stack in the composer (`<AbsoluteFill>` over the `ShotView`s, DOM so it sca
 with `--scale` automatically). Timing source of truth is the scene's
 `voice/words.json` (`[{ w, s, e }]` seconds); chunk words greedily in order (casing
 and punctuation as spoken). QA: every chunk is timed to words.json, max 2 words,
-one line only (`whiteSpace: nowrap`), nothing overlaps the safe bottom band.
+one line only (`whiteSpace: nowrap`), nothing overlaps the safe bottom band,
+display spelling is the correct written form, never the TTS respelling
+(`E0` not `enol`, `eddy` not `edi` — see Voice step for the words.json text QA).
 
 ## Final look values (Broughton 1831 after 4 verifier rounds; presets in `templates/engine/`, example scene in `templates/scenes/broughton-1831/`)
 Start every new short from the engine + the example scene (copy `templates/scenes/broughton-1831/` to `src/videos/<name>/`): the look lives in these engine values, the
