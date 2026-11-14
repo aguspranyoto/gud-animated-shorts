@@ -91,9 +91,10 @@ User rules that apply:
     - Review the WHOLE sheet for: broken/void frames, characters missing or eclipsed, wrong facing, caption timing/overlap, flicker-risk geometry (camera passing through cards/furniture). Fix, re-sheet, repeat until clean.
     - Only then proceed; the 2K render must use the exact code the approved sheet was made from.
 11. **Final render.**
-    - `npx remotion render src/index.ts <Comp> out/<name>/video.mp4 --codec h264 --crf 16 --scale 1.3333`
+    - `npx remotion render src/index.ts <Comp> out/<name>/video.mp4 --codec h264 --crf 16 --scale 1.3333 --concurrency=1 --browser-executable="<path to Chrome or Brave>"`
+      (`--concurrency=1` is MANDATORY, not optional: parallel render tabs share one GPU process, and under contention some frames get captured before WebGL finishes — whole-scene gray flashes (~20 % of frames) that never appear in stills. Proven 2026-11-14: 362 pop frames with default concurrency vs 5 benign ones with `--concurrency=1` on the same scene.)
     - Mux with `-map 0:v:0 -map 1:a:0` (Remotion writes a silent audio track).
-    - QA: `python scripts/short_qa.py final.mp4 out/<name>/qa shots.json` checks every frame for black, white, frozen and pop frames, plus loudness and sheets.
+    - QA: `python scripts/short_qa.py final.mp4 out/<name>/qa shots.json` checks every frame for black, white, frozen and pop frames, plus loudness and sheets. A pop count far above the cut/flash/caption budget means re-render (see concurrency rule above) — never ship flicker.
     - Fix anything it finds, then run a deep Opus audit.
 12. **Deliver.** SendUserFile the final mp4, update memory, write notes.
 
