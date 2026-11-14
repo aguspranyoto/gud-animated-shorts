@@ -139,6 +139,10 @@ lighting 5-6, ink 6, textures 5-6, characters 7, depth 6-7, composition 6-7 (fro
   contact shadow ~.5 under the feet + sun-direction tail by day; golden rim inner only (never an offset outer copy).
 - **Camera** (`story.ts`): cuts on big jumps, smootherstep glides 18-40 f, every hold creeps (no static hold ≥4 f),
   flip kicks decaying over 7 f on impacts, 4-4.6° rolls, foreground props (`FOREGROUND`) in ~1/3 of shots.
+  Pacing: cut every ~4 s (120 f) through the hook/first 13 s — never a single continuous push-in longer than
+  ~5 s. Prefer lateral tracking drifts (camera slides sideways, subject travels L→R) over push-in zooms for
+  B-roll variety. Split any shot longer than ~150 f into two keys (reframe glide ~32 f, then creep ≤0.0012/f).
+  Ease every prop animation with smootherstep over ≥60 f; never snap positions between shots.
 
 ## Look targets (measured from the reference; see references/reports/)
 - **Ink:**
@@ -154,6 +158,11 @@ lighting 5-6, ink 6, textures 5-6, characters 7, depth 6-7, composition 6-7 (fro
 - **Camera:**
   - Hard cuts on big jumps. Everything else is a smootherstep glide of 18-40 f, peak ≤ 25 px/f at 720p.
   - Every hold pushes in 0.15-0.35 %/f, with 0.6 %/f on punch words.
+  - Pacing: a fresh cut every ~4 s (120 f) in the hook; no single push-in runs longer than ~5 s.
+  - B-roll variety comes from lateral tracking drifts (camera slides sideways, subject travels L→R),
+    not from repeated push-in zooms. Keep the subject fully in frame with margin — never crop the hero prop.
+  - Shots longer than ~150 f get two keys (reframe glide ~32 f, then creep ≤0.0012/f).
+  - Prop animation (slides, lifts, reveals) always eased with smootherstep over ≥60 f, timed clear of camera cuts.
   - Rolls of 4-5°.
   - No hand-held float. Impact shakes flip sign every frame and decay over 7 f.
 - **Characters:**
