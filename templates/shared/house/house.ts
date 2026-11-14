@@ -369,7 +369,11 @@ function addFrontDecor(parent: THREE.Group) {
     c.geometry.computeVertexNormals();
     c.rotation.y = Math.PI;
     c.position.set(1.2 + s * (HOUSE.winW / 2 + 0.32), HOUSE.winY + 0.1, fz - 0.18);
-    c.castShadow = true;
+    // No shadow casting here: these curtains hang right where interior wide
+    // cameras sit, and their shadows read as a flat grey slab on the frame
+    // edge (verified 2026-11-14). The room keeps its shape from the sun
+    // through the glass, not from curtain shadows.
+    c.castShadow = false;
     parent.add(c);
   }
   // small frame between door and window
