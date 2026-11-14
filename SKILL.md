@@ -62,6 +62,9 @@ User rules that apply:
    - `DOF`/`dofAt`: lens blur per beat.
    - `FOREGROUND`: near framing props.
    - Every visual reaction lands 0-3 frames before its word.
+   - **Camera goes to the speaker.** Every cut lands on whoever is talking; never hold the listener through someone else's lines (brief reaction shots excepted). On every speaker change, cut or reframe to the new speaker.
+   - **No slow push-ins.** Holds stay static in position — no creeping drift forward. Camera moves only on cuts and deliberate reframes (glides) between beats.
+   - **Mix distances, not just faces.** Every short must include distant/wide views (open wide, at least one wide return mid-video, close wide) — never a full run of CU/mid face shots.
 5. **World.**
    - `lights.ts`: LIGHTS plus the LOOK sky/river/cloud palette per light.
    - `shade.ts`: two-tone shading and `untone()`.
@@ -135,8 +138,7 @@ lighting 5-6, ink 6, textures 5-6, characters 7, depth 6-7, composition 6-7 (fro
 - **Characters** (`toon.ts`/`cast.ts`/`cardshade.ts`): bean heads h/w .94, plum ink #241726, eyes .26 W apart, no blush,
   14 expressions; adults 3.5 head-heights; walk bob 5 %, lean 1-7°, planted 0.8 m stride; blinks 0.5-2.3 s; tight
   contact shadow ~.5 under the feet + sun-direction tail by day; golden rim inner only (never an offset outer copy).
-- **Camera** (`story.ts`): cuts on big jumps, smootherstep glides 18-40 f, every hold creeps (no static hold ≥4 f),
-  flip kicks decaying over 7 f on impacts, 4-4.6° rolls, foreground props (`FOREGROUND`) in ~1/3 of shots.
+- **Camera** (`story.ts`): cuts on big jumps and on every speaker change (frame the speaker), deliberate glides between beats, holds are static in position (no push-in drift), flip kicks decaying over 7 f on impacts, 4-4.6° rolls, foreground props (`FOREGROUND`) in ~1/3 of shots, wides mixed in (never faces only).
 
 ## Look targets (measured from the reference; see references/reports/)
 - **Ink:**
@@ -150,8 +152,9 @@ lighting 5-6, ink 6, textures 5-6, characters 7, depth 6-7, composition 6-7 (fro
   - Fog = horizon colour, 25→420 m day, 20→360 m golden, 20→260 m night (fog #141c33).
   - Bloom only on HDR emissives: threshold 1.0.
 - **Camera:**
-  - Hard cuts on big jumps. Everything else is a smootherstep glide of 18-40 f, peak ≤ 25 px/f at 720p.
-  - Every hold pushes in 0.15-0.35 %/f, with 0.6 %/f on punch words.
+  - Hard cuts on big jumps and on every speaker change — the frame follows the speaker.
+  - Holds are static in position (no forward drift); movement is cuts + deliberate glides between beats.
+  - Mix distances: wides/establishing shots plus CU/mid, never faces only.
   - Rolls of 4-5°.
   - No hand-held float. Impact shakes flip sign every frame and decay over 7 f.
 - **Characters:**
@@ -202,4 +205,4 @@ lighting 5-6, ink 6, textures 5-6, characters 7, depth 6-7, composition 6-7 (fro
 - Painted signs lit by a side sun go grey-blue and unreadable: give the sign face an unlit material.
 - Golden rim light done as an offset outer copy turns every hat into a picture frame: inner rim only, head/torso only.
 - Balcony/railing rails at chest height through characters: put the lens ~2.5 m up so rails cross legs, not torsos.
-- Flat holds read as freezes in QA (frozen span ≥12 f): every hold needs a creeping push-in.
+- Holds are static by design (no push-in), so keep them alive some other way: talking mouths, blinks and caption swaps normally keep the frame diff above the frozen-span QA threshold (≥12 f). If a hold has no speech and no motion, cut away instead of holding.
