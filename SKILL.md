@@ -35,6 +35,9 @@ User rules that apply:
 ## Pipeline
 1. **Topic and facts.** Pick one topic that starts from something easy to imagine, has a scientific/logical explanation, can escalate to something more complex, has interesting animation potential, and gives the viewer new knowledge (see VIDEO_FORMAT.md section 5). Good categories: everyday science/physics, daily tech, human body, nature, history, transport, economy, unique Indonesian phenomena.
    - Write the facts with their source at the top of `SCRIPT.md`. Check accuracy before writing.
+   - **Type (pick ONE per video, stated in the job): story vs explainer.**
+     - `story`: character dialogue in a PLACE (reuse `templates/shared/house/` for indoors, or build an outdoor set). Bean-head characters talk, OTS/shot-reverse-shot grammar, expressions carry the beats. Proven: malas-makan, daftar-kuliah.
+     - `explainer`: technical teardown of an OBJECT, no characters needed. White studio + exploded view: chassis, parts, animated process (fields, flows, heat), macro cameras that always fit the hero prop. Hook + closing MAY return to the everyday place (table/kitchen); middle shots stay in the studio. Proven: kompor-induksi (induction cooktop: glass/coil/PCB/pot, magnetic-field loops, eddy swirls, E0 sensor demo).
 2. **Script** (45-60 s, Bahasa Indonesia kasual Aku/Kamu). Escalating formula from VIDEO_FORMAT.md, not the old bridge beats:
    - **Hook "Kalo kamu...":** everyday relatable situation ("Kalo kamu nyalain AC, kamar kamu jadi dingin...").
    - **Basic Explanation:** explain the phenomenon simply (AC memindahkan panas, bukan menciptakan dingin).
