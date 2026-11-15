@@ -1,0 +1,36 @@
+Kalo Kamu Download Game, Gamenya Itu Ada di Mana Sih?
+Speaker 1 (laki) [curious]
+Kalo kamu klik donlod gem, gemnya itu pindah ke mana sih?
+
+Speaker 1 (laki) [explaining]
+Data dari server ngalir lewat internet, terus ditulis jadi fail. Namanya es es de.
+
+Speaker 1 (laki) [surprised]
+Tapi tunggu dulu! Isi foldernya bukan satu fail gede, tapi ribuan fail yang dipadatkan.
+
+Speaker 1 (laki) [explaining]
+Di stim, semuanya ngumpul di folder stimaps. Coba buka sendiri.
+
+Speaker 1 (laki) [excited]
+Terus, gimana caranya kamu bisa main?
+
+Speaker 1 (laki) [enthusiastic]
+Pas kamu pencet plei, datanya dibaca, dibuka, terus dikirim ke ram. Gem berat butuh es es de cepat.
+
+Speaker 1 (laki) [curious]
+Tapi kok datanya bisa diam di dalam kotak sekecil itu?
+
+Speaker 1 (laki) [explaining]
+Di dalem es es de ada miliaran sel nand. Tiap sel nahan elektron. Ada elektron itu satu, kosong itu nol.
+
+Speaker 1 (laki) [energetic]
+Data ditulis per halaman kecil, tapi dihapusnya per blok gede.
+
+Speaker 1 (laki) [surprised]
+Jadi waktu kamu hapus gem, datanya nggak langsung hilang!
+
+Speaker 1 (laki) [explaining]
+Sistemnya cuma nandain bloknya kosong. Isinya masih di sana, sampai ketimpa data baru.
+
+Speaker 1 (laki) [amazed]
+Jadi gem kamu bukan di internet, tapi di kotak kecil di meja kamu.

@@ -7,7 +7,7 @@ description: Make a 45-60 s vertical cartoon educational short in Bahasa Indones
 
 Content format source of truth: **references/VIDEO_FORMAT.md** (escalating educational storytelling, 45-60 s, Bahasa Indonesia kasual Aku/Kamu, target Indonesia).
 Visual style reference: **The Bridge That Fell for a Song** (67 s, 1831 Broughton bridge). Keep its look, replace its story formula with VIDEO_FORMAT.md.
-- Code: a scene folder `src/videos/<name>/` of your Remotion project (e.g. the example `templates/scenes/broughton-1831/`, composition `BroughtonShort`, 1080x1920, 30 fps) on top of the reusable engine `templates/engine/`.
+- Code: a scene folder `src/videos/<name>/` of your Remotion project (story reference: `templates/scenes/broughton-1831/`, composition `BroughtonShort`; explainer reference: `templates/scenes/donlod-gem/`, composition `DonlodGem` — 1080x1920, 30 fps) on top of the reusable engine `templates/engine/`.
 - Script, voice and sound: `~/bridge-short/` (but script format follows VIDEO_FORMAT.md: `script.txt` with `Speaker N` labels + narration + emotion tags, no timestamps/visual directions).
 - Style research: `references/` (VIDEO_FORMAT.md for storytelling/script/voice, STYLE_BIBLE.md + reports/*.md + frames/ for visuals).
 
@@ -56,7 +56,7 @@ User rules that apply:
    - Concatenate the per-line WAVs in script order to `voice.wav` (5-10 ms crossfade or silence gap between lines).
    - Then make per-line word timings with any speech-to-text with word times and offset each line's times by its start in the concat → `words.json` (`[{ w, s, e, sp }]` — `sp` = speaker number, so each character's mouth follows only its own lines via `mouthAt(words.filter(w => w.sp === N), t)`). Hand-fix the timings. Then QA the display text: STT transcribes what it hears (the TTS respellings), so restore proper display spelling in `w` WITHOUT touching `s`/`e` (e.g. `enol.` → `E0.`, `edi,` → `eddy,`, `standless.` → `stainless.`). The voice audio keeps the respelled pronunciation; captions show the correct written form. Everything (shots, SFX, captions, mouths) is timed to words.json.
    - Put them in the project folder, e.g. `~/bridge-short/voice/` (`line_01.wav`, `line_02.wav`, ... + `voice.wav` + `words.json`).
-4. **Shot plan** in `story.ts`: copy `templates/scenes/broughton-1831/` (the finished example scene) to `src/videos/<name>/`, import the engine from `templates/engine/`, register a new composition in `src/Root.tsx`, and rename scene constants to your story. Generic camera grammar lives in `templates/engine/camera.ts`; the scene's story.ts holds only your SHOTS/CAMS/DOF/story-physics tables.
+4. **Shot plan** in `story.ts`: copy the matching reference scene — `templates/scenes/broughton-1831/` (story) or `templates/scenes/donlod-gem/` (explainer) — to `src/videos/<name>/`, import the engine from `templates/engine/`, register a new composition in `src/Root.tsx`, and rename scene constants to your story. Generic camera grammar lives in `templates/engine/camera.ts`; the scene's story.ts holds only your SHOTS/CAMS/DOF/story-physics tables.
    - `SHOTS`: id, a/b frames, light day/golden/night, crowd mode, `tau` story time.
    - `XFADE`: crossfades at place/time changes.
    - `FLASH_AT`: a white flash after the hook.
@@ -117,7 +117,7 @@ display spelling is the correct written form, never the TTS respelling
 (`E0` not `enol`, `eddy` not `edi` — see Voice step for the words.json text QA).
 
 ## Final look values (Broughton 1831 after 4 verifier rounds; presets in `templates/engine/`, example scene in `templates/scenes/broughton-1831/`)
-Start every new short from the engine + the example scene (copy `templates/scenes/broughton-1831/` to `src/videos/<name>/`): the look lives in these engine values, the
+Start every new short from the engine + the matching reference scene (copy `templates/scenes/broughton-1831/` or `templates/scenes/donlod-gem/` to `src/videos/<name>/`): the look lives in these engine values, the
 story lives in the scene's story.ts / world layout / cast roles. Opus max scores at the end: colour day 7, golden 5-6,
 lighting 5-6, ink 6, textures 5-6, characters 7, depth 6-7, composition 6-7 (from 5/3/4/5/4/7/4/6 at the start).
 - **Light presets** (`lights.ts`, sun camera-relative and frozen per shot):
