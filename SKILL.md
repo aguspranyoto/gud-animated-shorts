@@ -37,7 +37,7 @@ User rules that apply:
    - Write the facts with their source at the top of `SCRIPT.md`. Check accuracy before writing.
    - **Type (pick ONE per video, stated in the job): story vs explainer.**
      - `story`: character dialogue in a PLACE (reuse `templates/shared/house/` for indoors, or build an outdoor set). Bean-head characters talk, OTS/shot-reverse-shot grammar, expressions carry the beats. Proven: malas-makan, daftar-kuliah.
-     - `explainer`: technical teardown of an OBJECT, no characters needed. White studio + exploded view: chassis, parts, animated process (fields, flows, heat), macro cameras that always fit the hero prop. Hook + closing MAY return to the everyday place (table/kitchen); middle shots stay in the studio. Proven: kompor-induksi (induction cooktop: glass/coil/PCB/pot, magnetic-field loops, eddy swirls, E0 sensor demo).
+     - `explainer`: technical teardown of an OBJECT, no characters needed. White studio + exploded view: chassis, parts, animated process (fields, flows, heat), macro cameras that always fit the hero prop. Hook + closing MAY return to the everyday place (table/kitchen); middle shots stay in the studio. Proven: kompor-induksi (induction cooktop: glass/coil/PCB/pot, magnetic-field loops, eddy swirls, E0 sensor demo), donlod-gem (where a downloaded game lives: desk room + laptop/router/SSD/RAM from `templates/shared/tech/`, folder→pak, NAND cells, page vs block, delete ghost).
 2. **Script** (45-60 s, Bahasa Indonesia kasual Aku/Kamu). Escalating formula from VIDEO_FORMAT.md, not the old bridge beats:
    - **Hook "Kalo kamu...":** everyday relatable situation ("Kalo kamu nyalain AC, kamar kamu jadi dingin...").
    - **Basic Explanation:** explain the phenomenon simply (AC memindahkan panas, bukan menciptakan dingin).
@@ -70,6 +70,7 @@ User rules that apply:
    - `shade.ts`: two-tone shading and `untone()`.
    - `build.ts`: town, houses and Kenney CC0 kit props, recoloured, with sight-line culling of anything blocking a camera.
    - `templates/shared/house/`: reusable indoor dining room (`buildHouse()` + anchors: tableTop/plateKid/plateMom/kidSeat/momSeat/windowPos/lampPos/doorPos). Copy to your project's `src/shared/house/` for any indoor dialogue short instead of rebuilding a room.
+   - `templates/shared/tech/`: reusable hardware for any tech explainer (`buildDeskRoom()` + anchors laptopSeat/routerSeat/ssdSeat, `buildLaptop()` with setProgress/setPlayPress/setCursor, `buildRouter()` with wifi arcs + data packets, `buildSSD()` with write glow, `buildRam()` with chips that light up, `makeLabel()`/`faceLabels()` for text cards on the NOINK layer). Copy to your project's `src/shared/tech/`; preview in `templates/shared/tech/preview.jpg`. Proven: donlod-gem.
    - `paint.ts`: HD Canvas2D painted textures with seams painted in as dark tints.
    - `world.ts`: sky shader, fog = horizon colour, river, per-frame posing, sun frozen per shot and camera-relative.
 6. **Characters.**
@@ -201,6 +202,10 @@ lighting 5-6, ink 6, textures 5-6, characters 7, depth 6-7, composition 6-7 (fro
 - **Disk:** every Remotion bundle copies `public/` (~1.3 GB) into `the temp folder\remotion-webpack-bundle-*` and never deletes it. 60+ GB filled the system drive during the bridge passes and a render died with ENOSPC. Always render with `export TEMP='<big drive>/remotion-tmp' TMP='<big drive>/remotion-tmp'` (stills.mjs sets it itself) and ask the user before deleting old bundle folders in the shared the temp folder (auto mode blocks the sweep). <big drive>/remotion-tmp fills too (~500 folders / 110 GB after the 4 bridge rounds): when a project is finished and nothing is rendering, delete its `remotion-webpack-bundle-*` and `puppeteer_dev_chrome_profile-*` folders there.
 - In JS strings write `"<big drive>/remotion-tmp"`, never `"<big drive>\remotion-tmp"` (`\r` becomes a carriage return).
 - Remotion writes a silent audio track: mux with `-map 0:v:0 -map 1:a:0`.
+- **Camera `fov` is VERTICAL**: horizontal half-width = d·tan(fov/2)·(9/16) at 1080x1920. Framing maths that forgets the aspect crops props at the left/right edges every time.
+- **`roll` is radians**, not degrees: `roll: 1.5` is an 86° tilt; 4-5° = 0.07-0.09.
+- **Canvas label/card meshes must be added to a group** (`g.add(label)`); registering them in a list alone leaves them out of the scene and they render nowhere.
+- Text cards sit off the focal plane: set `cInf` ≈ 8 for the shot or they turn to mush under the lens blur.
 - Sub-agents can't write report files in this harness: ask them for a ≤150-word final message and save it yourself to `out/<name>/<n>/REPORT.md`.
 - Scratch `.ts` files inside `out/` break `tsc`: name them `.txt`.
 - 2K renders run ~4 fps (≈10 min for 67 s). Stills at 0.5 take 3-8 s each after a ~40 s bundle.
