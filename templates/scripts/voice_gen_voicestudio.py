@@ -15,8 +15,10 @@ Reads voice/script.txt:
   source of truth -- NOT the repo folder). The script AUTO-PICKS one
   voice per Speaker from the Speaker label (`Speaker 1 (laki)` ->
   adult male, `Speaker 2 (anak perempuan)` -> little girl female) and
-  REPORTS the mapping in `cast.json`. CLI args / VOICE_MAP only override
-  the auto-pick when explicitly passed.
+  REPORTS the mapping in `cast.json`. The project DEFAULT VO is
+  `young male` (VOICE_DEFAULT_PROFILE): it is used for single-speaker
+  scripts and for any speaker whose label has no gender/age. CLI args /
+  VOICE_MAP only override the auto-pick when explicitly passed.
 - `voice-backup/*.ovsvoice` in this repo is BACKUP ONLY (exported via
   POST /personas/export). It is never read directly: import a bundle
   into VoiceStudio first (POST /personas/import or UI Import Persona),
@@ -29,8 +31,9 @@ Usage:
   python3 templates/scripts/voice_gen_voicestudio.py [scene_dir] [N="voice name" ...]
   python3 templates/scripts/voice_gen_voicestudio.py --list
   scene_dir holds voice/script.txt; wavs land in voice/.
-  Env: VOICESTUDIO_URL (default http://127.0.0.1:3900), VOICE_PROFILE_ID
-  (default profile when script.txt has no Speaker labels),
+  Env: VOICESTUDIO_URL (default http://127.0.0.1:3900), VOICE_DEFAULT_PROFILE
+  (default VO for single-speaker / unlabeled speakers, default `young male`),
+  VOICE_PROFILE_ID (hard single-speaker override, any label),
   VOICE_MAP (optional override, e.g. '1=adult male,2=little girl female').
   CLI per-speaker args (e.g. 2="young female") override VOICE_MAP and the auto-pick.
 Requires: VoiceStudio app running, ffmpeg on PATH.
@@ -45,7 +48,11 @@ import urllib.parse
 import urllib.request
 
 BACKEND = os.environ.get("VOICESTUDIO_URL", "http://127.0.0.1:3900")
+# Hard override for a single speaker (any label). Empty = not set.
 DEFAULT_PROFILE = os.environ.get("VOICE_PROFILE_ID", "")
+# Project default VO: used for single-speaker scripts and for speakers whose
+# label has no gender/age hint. A labeled speaker keeps its auto-pick.
+DEFAULT_VOICE = os.environ.get("VOICE_DEFAULT_PROFILE", "young male")
 LANGUAGE = "Indonesian"
 
 # The 6 canonical voices (live VoiceStudio profiles = source of truth).
@@ -158,6 +165,12 @@ def pick_profiles(speakers, explicit=None):
     explicit = explicit or {}
 
     def auto_pick(gender, age, used):
+        # Project default VO: any speaker whose label says nothing about
+        # gender/age gets 'young male' (override with VOICE_DEFAULT_PROFILE).
+        if gender == "unknown" and DEFAULT_VOICE:
+            hit = by_name.get(DEFAULT_VOICE.lower())
+            if hit and hit[0] not in used:
+                return hit, f"default VO '{DEFAULT_VOICE}' (label has no gender/age)"
         want = VOICE_BY_ROLE.get((age, gender))
         if want and want in by_name and by_name[want][0] not in used:
             return by_name[want], f"auto: {age} {gender} -> '{want}'"
@@ -176,16 +189,16 @@ def pick_profiles(speakers, explicit=None):
     mapping, used, notes = {}, set(), []
     for n in sorted(speakers):
         gender, age = speakers[n]
-        if len(speakers) == 1 and DEFAULT_PROFILE and n not in explicit:
-            mapping[n] = (DEFAULT_PROFILE, "(VOICE_PROFILE_ID)")
-            notes.append(f"Speaker {n}: single-voice default {DEFAULT_PROFILE}")
-            continue
         if n in explicit:
             pid, name = resolve_profile(explicit[n], profiles)
             mapping[n] = (pid, name)
             reused = " (reused)" if pid in used else ""
             used.add(pid)
             notes.append(f"Speaker {n} ({gender}/{age}): {pid} '{name}' (override{reused})")
+            continue
+        if len(speakers) == 1 and DEFAULT_PROFILE:
+            mapping[n] = (DEFAULT_PROFILE, "(VOICE_PROFILE_ID)")
+            notes.append(f"Speaker {n}: single-voice default {DEFAULT_PROFILE}")
             continue
         (pid, name), how = auto_pick(gender, age, used)
         used.add(pid)
@@ -267,6 +280,7 @@ def list_profiles():
     for p in profiles:
         print(f"  {p['id']}  '{p.get('name', '')}'  lang={p.get('language', '')}")
     print("canonical 6: " + ", ".join(CANONICAL_VOICES))
+    print(f"project default VO: {DEFAULT_VOICE} (single speaker / unlabeled speakers)")
     print("backup only (import first, never read directly): voice-backup/*.ovsvoice")
 
 
