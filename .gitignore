@@ -1,6 +1,3 @@
-# Temporary skill test harness — dummy script/vo + rendered proofs.
-# Never commit test renders; skill repo holds SKILL.md + references/ + templates/ only.
-.tmp-test/
-tmp/
-out-test/
-*.log
+__pycache__/
+*.pyc
+.DS_Store
