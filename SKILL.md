@@ -50,7 +50,14 @@ This skill owns the cartoon-short formula (story, voice, look, QA gates). For de
    - **Type (pick ONE per video, stated in the job): story vs explainer.**
      - `story`: character dialogue in a PLACE (reuse `templates/shared/house/` for indoors, or build an outdoor set). Bean-head characters talk, OTS/shot-reverse-shot grammar, expressions carry the beats. Proven: malas-makan, daftar-kuliah.
      - `explainer`: technical teardown of an OBJECT, no characters needed. White studio + exploded view: chassis, parts, animated process (fields, flows, heat), macro cameras that always fit the hero prop. Hook + closing MAY return to the everyday place (table/kitchen); middle shots stay in the studio. Proven: kompor-induksi (induction cooktop: glass/coil/PCB/pot, magnetic-field loops, eddy swirls, E0 sensor demo), donlod-gem (where a downloaded game lives: desk room + laptop/router/SSD/RAM from `templates/shared/tech/`, folder→pak, NAND cells, page vs block, delete ghost). For an exploded view of real hardware from a downloaded GLB (e.g. a motorcycle engine): load `threejs-loaders` to inspect the node tree (every part must be a separate node — never explode a single merged mesh), `threejs-asset-pipeline` to optimize it, then animate one explode offset per part-group eased over ≥60 f.
-2. **Script** (45-60 s, Bahasa Indonesia kasual Aku/Kamu). Escalating formula from VIDEO_FORMAT.md, not the old bridge beats:
+2. **3D Asset Discovery (research phase, before scriptwriting).** Identify the 3D hero props the topic needs so the script and storyboard plan around what can actually be built.
+   - List every important 3D object required to visualize the topic, plus key sub-parts needed for exploded view / animation (e.g. AC outdoor unit: kompresor, kondensor, kipas, pipa refrigeran).
+   - Search the internet for existing downloadable `.glb` / `.gltf` models, prioritizing Sketchfab, then other reliable repositories (Kenney, Quaternius, Poly Pizza, Khronos samples, official vendor CAD exports converted to glTF).
+   - For each required asset, record candidates in the 3D Asset Research Report (template: `templates/ASSET_RESEARCH_TEMPLATE.md`): asset name, source URL, format (`.glb` / `.gltf`), license + attribution requirements, quality assessment (separate meshes? realistic geometry? polycount / texture size?), animation suitability (can it do the required exploded view / articulation, or is it one merged mesh?), status (verified downloadable / needs purchase / not found → fallback).
+   - Prioritize high-quality models with separate meshes and realistic geometry. For exploded view every part MUST be a separate node — never plan an explode around a single merged mesh (verify with `threejs-loaders` node-tree inspection before committing; optimize with `threejs-asset-pipeline`).
+   - If no suitable model is available, recommend an AI 3D model generator or a procedural build (`templates/shared/`, Kenney kit) as the fallback.
+   - Rules: never download or use a model without verifying its license; never fabricate model URLs or claim a model is downloadable without verification (only list URLs actually visited/found); never block scriptwriting on missing assets — document gaps, propose alternatives, and move on.
+3. **Script** (45-60 s, Bahasa Indonesia kasual Aku/Kamu). Escalating formula from VIDEO_FORMAT.md, not the old bridge beats:
    - **Hook "Kalo kamu...":** everyday relatable situation ("Kalo kamu nyalain AC, kamar kamu jadi dingin...").
    - **Basic Explanation:** explain the phenomenon simply (AC memindahkan panas, bukan menciptakan dingin).
    - **Key Information "Ini namanya...":** introduce the scientific term naturally (Ini namanya refrigeran).
@@ -61,14 +68,14 @@ This skill owns the cartoon-short formula (story, voice, look, QA gates). For de
    - Every narration line gets one speaker label + one emotion tag. Output standard: `script.txt` contains only title + `Speaker N` (+ optional gender) + narration + emotion tags (no timestamps, visual directions, scene descriptions, or editing notes — that file is TTS-only).
    - English words in the narration MUST be respelled the way they sound in Indonesian orthography, so the Indonesian TTS pronounces them right (lowbat → lowbet, summary → sameri). Never write the original English spelling in `script.txt`.
    - Never describe on screen what the viewer already sees.
-3. **Voice (ALWAYS VoiceStudio, per line, per speaker).** Strip the `[tags]` from `script.txt` (they are directions only — VoiceStudio would read them as literal words), then generate ONE take per narration line with that line's speaker profile (see Casting above; the default single-speaker / unlabeled profile is `young male`, and multi-speaker voices are auto-picked from the Speaker labels):
+4. **Voice (ALWAYS VoiceStudio, per line, per speaker).** Strip the `[tags]` from `script.txt` (they are directions only — VoiceStudio would read them as literal words), then generate ONE take per narration line with that line's speaker profile (see Casting above; the default single-speaker / unlabeled profile is `young male`, and multi-speaker voices are auto-picked from the Speaker labels):
    - VoiceStudio Clone page (or API `POST /generate` on the local backend `http://127.0.0.1:3900` with `profile_id`): text = one stripped line, language Indonesian, `Style` = that line's emotion tag without brackets (e.g. `[excited]` → Style `excited`). Template helper: `templates/scripts/voice_gen_voicestudio.py` (parses speakers, auto-picks each speaker's voice from the label, concatenates).
    - VoiceStudio Clone page (or API `POST /generate` on the local backend `http://127.0.0.1:3900` with `profile_id`): text = one stripped line, language Indonesian, `Style` = that line's emotion tag without brackets (e.g. `[excited]` → Style `excited`).
    - Keep the reference clip ≤20 s with a matching transcript, or the sidecar fails with `REFERENCE_STT_MISSING` (see troubleshooting: short 3-10 s reference is ideal).
    - Concatenate the per-line WAVs in script order to `voice.wav` (5-10 ms crossfade or silence gap between lines).
    - Then make per-line word timings with any speech-to-text with word times and offset each line's times by its start in the concat → `words.json` (`[{ w, s, e, sp }]` — `sp` = speaker number, so each character's mouth follows only its own lines via `mouthAt(words.filter(w => w.sp === N), t)`). Hand-fix the timings. Then QA the display text: STT transcribes what it hears (the TTS respellings), so restore proper display spelling in `w` WITHOUT touching `s`/`e` (e.g. `enol.` → `E0.`, `edi,` → `eddy,`, `standless.` → `stainless.`). The voice audio keeps the respelled pronunciation; captions show the correct written form. Everything (shots, SFX, captions, mouths) is timed to words.json.
    - Put them in the project folder, e.g. `~/bridge-short/voice/` (`line_01.wav`, `line_02.wav`, ... + `voice.wav` + `words.json`).
-4. **Shot plan** in `story.ts`: copy the matching reference scene — `templates/scenes/broughton-1831/` (story) or `templates/scenes/donlod-gem/` (explainer) — to `src/videos/<name>/`, import the engine from `templates/engine/`, register a new composition in `src/Root.tsx`, and rename scene constants to your story. Generic camera grammar lives in `templates/engine/camera.ts`; the scene's story.ts holds only your SHOTS/CAMS/DOF/story-physics tables.
+5. **Shot plan** in `story.ts`: copy the matching reference scene — `templates/scenes/broughton-1831/` (story) or `templates/scenes/donlod-gem/` (explainer) — to `src/videos/<name>/`, import the engine from `templates/engine/`, register a new composition in `src/Root.tsx`, and rename scene constants to your story. Generic camera grammar lives in `templates/engine/camera.ts`; the scene's story.ts holds only your SHOTS/CAMS/DOF/story-physics tables.
    - `SHOTS`: id, a/b frames, light day/golden/night, crowd mode, `tau` story time.
    - `XFADE`: crossfades at place/time changes.
    - `FLASH_AT`: a white flash after the hook.
@@ -77,7 +84,7 @@ This skill owns the cartoon-short formula (story, voice, look, QA gates). For de
    - `DOF`/`dofAt`: lens blur per beat.
    - `FOREGROUND`: near framing props.
    - Every visual reaction lands 0-3 frames before its word.
-5. **World.**
+6. **World.**
    - `lights.ts`: LIGHTS plus the LOOK sky/river/cloud palette per light.
    - `shade.ts`: two-tone shading and `untone()`.
    - `build.ts`: town, houses and Kenney CC0 kit props, recoloured, with sight-line culling of anything blocking a camera.
@@ -85,34 +92,34 @@ This skill owns the cartoon-short formula (story, voice, look, QA gates). For de
    - `templates/shared/tech/`: reusable hardware for any tech explainer (`buildDeskRoom()` + anchors laptopSeat/routerSeat/ssdSeat, `buildLaptop()` with setProgress/setPlayPress/setCursor, `buildRouter()` with wifi arcs + data packets, `buildSSD()` with write glow, `buildRam()` with chips that light up, `makeLabel()`/`faceLabels()` for text cards on the NOINK layer). Copy to your project's `src/shared/tech/`; preview in `templates/shared/tech/preview.jpg`. Proven: donlod-gem.
    - `paint.ts`: HD Canvas2D painted textures with seams painted in as dark tints.
    - `world.ts`: sky shader, fog = horizon colour, river, per-frame posing, sun frozen per shot and camera-relative.
-6. **Characters.**
+7. **Characters.**
    - `toon.ts`: the Canvas2D `Pen` drawing API, 600x1000 design canvas, soles at y = 975, bean heads, stick limbs, plum variable-width outline, face library.
    - `cast.ts`: camera-facing billboards, crowds, effect cards, blinks, walk cycles. All billboards go on the `NOINK` layer.
    - `cardshade.ts`: cards lit by the scene light, no emissive.
    - **Talking mouths (mandatory for every speaking shot).** Expression carries the emotion; the jaw follows the voice: feed that speaker's `words.json` timings into `mouthAt(words, t, seed)` (engine `cast.ts`) and pass the result as the character's `FrontOpts`/`SideOpts` `mouth` (0 closed .. 1 open). Below ~0.12 the static expression mouth is drawn; above it the jaw opens. Silence = mouth shut.
    - **Back view (OTS foregrounds, wides).** `person(cam, who, x, y, z, { side: false, mirror: false, back: true }, {}, {}, scale, { mode: "sit" | "stand" })` draws hair + shoulders with no face (`bodyBack` in `toon.ts`, bonnet renders as headscarf). Use it whenever a character faces away from the camera instead of faking it with a side profile.
-7. **Post** (`<Name>.tsx` composer + engine `ink.ts` + `lensblur.ts` + `grade.ts`).
+8. **Post** (`<Name>.tsx` composer + engine `ink.ts` + `lensblur.ts` + `grade.ts`).
    - Composer order: ink → lens pre → lens main → bloom → NEUTRAL tone map → grade (MSAA 4).
    - Every pixel parameter scales with output height / 1920.
-8. **Sound** (engine kit `templates/engine/audio/`: dsp.py, instruments.py, sfx_gen.py; scene composition `audio/`: timeline.py, sfx.py, music.py, mix.py, cues.md).
+9. **Sound** (engine kit `templates/engine/audio/`: dsp.py, instruments.py, sfx_gen.py; scene composition `audio/`: timeline.py, sfx.py, music.py, mix.py, cues.md).
    - Event table → synthesized SFX plus an original score ducked under the voice.
    - Output: mix.wav (48 kHz, exact length), stems and cues.md.
    - Lock the picture's time constants before the sound is made. Any later timing change means re-running the sound.
-9. **Look checks.** Run `node scripts/stills.mjs out/<name>/x_ 100,400 0.5`.
+10. **Look checks.** Run `node scripts/stills.mjs out/<name>/x_ 100,400 0.5`.
    - Set `ENTRY=src/sandboxes/<n>/index.tsx` (and `COMP=<Comp>`) to render a sandbox copy.
    - Make side-by-sides against reference frames with `python scripts/sbs_sheet.py out.jpg --ours ... --ref ...`.
    - Send them to an Opus max verifier: 1-3 images, a ≤200-word verdict.
-10. **Contact sheet gate (MANDATORY — never render video before this passes).**
+11. **Contact sheet gate (MANDATORY — never render video before this passes).**
     - Render one still per second: `node scripts/stills.mjs out/<name>/sheet/f_ 0,30,60,... 0.3`, then tile with `python3 scripts/sheet.py out/<name>/sheet f_ out/<name>/sheet_<name>.jpg 10` (10 columns, like `references/sheets/*.jpg`).
     - Review the WHOLE sheet for: broken/void frames, characters missing or eclipsed, wrong facing, caption timing/overlap, flicker-risk geometry (camera passing through cards/furniture). Fix, re-sheet, repeat until clean.
     - Only then proceed; the 2K render must use the exact code the approved sheet was made from.
-11. **Final render.**
+12. **Final render.**
     - `npx remotion render src/index.ts <Comp> out/<name>/video.mp4 --codec h264 --crf 16 --scale 1.3333 --concurrency=1 --browser-executable="<path to Chrome or Brave>"`
       (`--concurrency=1` is MANDATORY, not optional: parallel render tabs share one GPU process, and under contention some frames get captured before WebGL finishes — whole-scene gray flashes (~20 % of frames) that never appear in stills. Proven 2026-11-14: 362 pop frames with default concurrency vs 5 benign ones with `--concurrency=1` on the same scene.)
     - Mux with `-map 0:v:0 -map 1:a:0` (Remotion writes a silent audio track).
     - QA: `python scripts/short_qa.py final.mp4 out/<name>/qa shots.json` checks every frame for black, white, frozen and pop frames, plus loudness and sheets. A pop count far above the cut/flash/caption budget means re-render (see concurrency rule above) — never ship flicker.
     - Fix anything it finds, then run a deep Opus audit.
-12. **Deliver.** SendUserFile the final mp4, update memory, write notes.
+13. **Deliver.** SendUserFile the final mp4, update memory, write notes.
 
 ## Captions (ALWAYS on; every short ships with them)
 
